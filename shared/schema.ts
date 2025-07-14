@@ -4,9 +4,12 @@ import { z } from "zod";
 
 export const goals = pgTable("goals", {
   id: serial("id").primaryKey(),
-  distance: real("distance").notNull().default(5.0),
-  heartRate: integer("heart_rate").notNull().default(150),
-  duration: integer("duration").notNull().default(30), // in minutes
+  type: text("type").notNull(), // 'workout-distance', 'workout-heart-rate', 'workout-duration', 'sleep-time', 'sleep-score', 'hydration', etc.
+  name: text("name").notNull(),
+  targetValue: real("target_value").notNull(),
+  unit: text("unit").notNull(), // 'km', 'bpm', 'minutes', 'hours', 'ml', 'score'
+  category: text("category").notNull(), // 'workout', 'sleep', 'hydration', etc.
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -23,10 +26,10 @@ export const workouts = pgTable("workouts", {
 
 export const habitData = pgTable("habit_data", {
   id: serial("id").primaryKey(),
-  date: text("date").notNull().unique(), // YYYY-MM-DD format
-  distanceAchieved: boolean("distance_achieved").default(false),
-  heartRateAchieved: boolean("heart_rate_achieved").default(false),
-  durationAchieved: boolean("duration_achieved").default(false),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  goalId: integer("goal_id").references(() => goals.id).notNull(),
+  achieved: boolean("achieved").default(false),
+  actualValue: real("actual_value"), // The actual measured value
   workoutId: integer("workout_id").references(() => workouts.id),
 });
 

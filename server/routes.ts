@@ -1,28 +1,43 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertGoalSchema, insertWorkoutSchema, insertHabitDataSchema } from "@shared/schema";
+import { insertGoalSchema, insertWorkoutSchema, insertHabitDataSchema, type HabitData } from "@shared/schema";
 import { smartWatchRoutes } from "./smartwatch-apis";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Goals endpoints
-  app.get("/api/goals/current", async (req, res) => {
+  app.get("/api/goals", async (req, res) => {
     try {
-      const goal = await storage.getCurrentGoal();
-      if (!goal) {
-        return res.status(404).json({ message: "No goal found" });
-      }
-      res.json(goal);
+      const category = req.query.category as string;
+      const goals = category 
+        ? await storage.getGoalsByCategory(category)
+        : await storage.getGoals();
+      res.json(goals);
     } catch (error) {
-      res.status(500).json({ message: "Failed to get current goal" });
+      res.status(500).json({ message: "Failed to get goals" });
     }
   });
 
-  app.put("/api/goals", async (req, res) => {
+  app.post("/api/goals", async (req, res) => {
     try {
       const goalData = insertGoalSchema.parse(req.body);
-      const goal = await storage.updateGoal(goalData);
+      const goal = await storage.createGoal(goalData);
+      res.json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid goal data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create goal" });
+      }
+    }
+  });
+
+  app.put("/api/goals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const goalData = insertGoalSchema.parse(req.body);
+      const goal = await storage.updateGoal(id, goalData);
       res.json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -30,6 +45,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to update goal" });
       }
+    }
+  });
+
+  app.delete("/api/goals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteGoal(id);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete goal" });
     }
   });
 
@@ -60,20 +85,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Habit data endpoints
   app.get("/api/habit-data", async (req, res) => {
     try {
-      const habitData = await storage.getHabitData();
-      res.json(habitData);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to get habit data" });
-    }
-  });
-
-  app.get("/api/habit-data/:date", async (req, res) => {
-    try {
-      const { date } = req.params;
-      const habitData = await storage.getHabitDataByDate(date);
-      if (!habitData) {
-        return res.status(404).json({ message: "No habit data found for this date" });
+      const goalId = req.query.goalId as string;
+      const date = req.query.date as string;
+      
+      let habitData: HabitData[];
+      if (goalId) {
+        habitData = await storage.getHabitDataByGoal(parseInt(goalId));
+      } else if (date) {
+        habitData = await storage.getHabitDataByDate(date);
+      } else {
+        habitData = await storage.getHabitData();
       }
+      
       res.json(habitData);
     } catch (error) {
       res.status(500).json({ message: "Failed to get habit data" });
@@ -82,9 +105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/habit-data", async (req, res) => {
     try {
-      const habitData = insertHabitDataSchema.parse(req.body);
-      const result = await storage.createOrUpdateHabitData(habitData);
-      res.json(result);
+      const habitDataInput = insertHabitDataSchema.parse(req.body);
+      const habitData = await storage.createOrUpdateHabitData(habitDataInput);
+      res.json(habitData);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid habit data", errors: error.errors });
@@ -97,51 +120,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Statistics endpoint
   app.get("/api/statistics", async (req, res) => {
     try {
+      const goals = await storage.getGoals();
       const habitData = await storage.getHabitData();
-      const workouts = await storage.getWorkouts();
       
-      // Calculate streak
-      const today = new Date();
+      // Calculate statistics
       let streak = 0;
-      for (let i = 0; i < 365; i++) {
-        const checkDate = new Date(today);
-        checkDate.setDate(checkDate.getDate() - i);
-        const dateStr = checkDate.toISOString().split('T')[0];
-        const data = habitData.find(h => h.date === dateStr);
-        
-        if (data && (data.distanceAchieved || data.heartRateAchieved || data.durationAchieved)) {
+      let totalWorkoutDays = 0;
+      let totalAchievements = 0;
+      let totalDays = 0;
+      
+      // Group habit data by date
+      const dataByDate = new Map<string, HabitData[]>();
+      habitData.forEach(data => {
+        if (!dataByDate.has(data.date)) {
+          dataByDate.set(data.date, []);
+        }
+        dataByDate.get(data.date)!.push(data);
+      });
+      
+      // Sort dates (newest first)
+      const sortedDates = Array.from(dataByDate.keys()).sort((a, b) => 
+        new Date(b).getTime() - new Date(a).getTime()
+      );
+      
+      // Calculate current streak
+      for (const date of sortedDates) {
+        const dayData = dataByDate.get(date)!;
+        const allAchieved = dayData.every(data => data.achieved);
+        if (allAchieved && dayData.length > 0) {
           streak++;
         } else {
           break;
         }
       }
       
-      // Calculate total workout days
-      const totalWorkoutDays = habitData.length;
+      // Calculate total statistics
+      totalWorkoutDays = sortedDates.length;
       
-      // Calculate average achievement rate
-      let averageAchievementRate = 0;
-      if (habitData.length > 0) {
-        const totalRate = habitData.reduce((acc, day) => {
-          const achieved = [day.distanceAchieved, day.heartRateAchieved, day.durationAchieved].filter(Boolean).length;
-          return acc + (achieved / 3);
-        }, 0);
-        averageAchievementRate = Math.round(totalRate / habitData.length * 100);
-      }
+      sortedDates.forEach(date => {
+        const dayData = dataByDate.get(date)!;
+        const achievedCount = dayData.filter(data => data.achieved).length;
+        totalAchievements += achievedCount;
+        totalDays += dayData.length;
+      });
+      
+      const averageAchievementRate = totalDays > 0 ? (totalAchievements / totalDays) * 100 : 0;
       
       res.json({
         streak,
         totalWorkoutDays,
-        averageAchievementRate,
+        averageAchievementRate: Math.round(averageAchievementRate),
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to get statistics" });
     }
   });
 
-  // スマートウォッチ統合ルート
+  // Smart Watch API routes
   smartWatchRoutes(app);
 
-  const httpServer = createServer(app);
-  return httpServer;
+  return createServer(app);
 }
