@@ -71,7 +71,7 @@ export default function Home() {
             <i className="fas fa-target text-orange-600"></i>
             現在の目標
           </h3>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <div className="text-sm font-medium text-gray-700 mb-1">距離目標</div>
               <div className="text-2xl font-bold text-blue-600">{currentGoal.distance} km</div>

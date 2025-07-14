@@ -18,7 +18,7 @@ export function StatisticsCard({ statistics }: StatisticsCardProps) {
           <TrendingUp className="text-blue-600" />
           統計情報
         </h2>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
             <div className="text-3xl font-bold text-green-600 mb-1">-</div>
             <div className="text-sm text-gray-600">日間連続</div>
@@ -43,7 +43,7 @@ export function StatisticsCard({ statistics }: StatisticsCardProps) {
         統計情報
       </h2>
       
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
           <div className="text-3xl font-bold text-green-600 mb-1">
             {statistics.streak}
