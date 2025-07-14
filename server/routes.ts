@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertGoalSchema, insertWorkoutSchema, insertHabitDataSchema } from "@shared/schema";
+import { smartWatchRoutes } from "./smartwatch-apis";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -137,6 +138,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get statistics" });
     }
   });
+
+  // スマートウォッチ統合ルート
+  smartWatchRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

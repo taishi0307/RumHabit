@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack habit tracking application built with React, Express, and PostgreSQL. The app focuses on workout habit tracking with goals for distance, heart rate, and duration. It features a modern UI with calendar visualization, statistics tracking, and goal management.
+This is a full-stack habit tracking application built with React, Express, and PostgreSQL. The app focuses on workout habit tracking with goals for distance, heart rate, and duration. It features a modern UI with calendar visualization, statistics tracking, goal management, and comprehensive smartwatch integration for automatic workout data import from Apple Watch, Huawei Watch, Xiaomi Mi Band, Garmin devices, and Google Fit.
 
 ## User Preferences
 
@@ -47,13 +47,18 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/habit-data` - Retrieve habit tracking data
 - `POST /api/habit-data` - Create/update daily habit data
 - `GET /api/statistics` - Get aggregated statistics
+- `GET /api/smartwatch/available` - Get available smartwatch APIs
+- `POST /api/smartwatch/auth/:brand` - Authenticate with smartwatch APIs
+- `POST /api/smartwatch/sync/:brand` - Sync workout data from smartwatch
 
 ### Frontend Components
 - **Home Page**: Main dashboard with statistics, calendar, and settings
-- **CalendarView**: Visual habit tracking calendar
+- **CalendarView**: Visual habit tracking calendar with color-coded achievement levels
 - **StatisticsCard**: Displays streak, total days, and achievement rates
 - **GoalSettingsModal**: Modal for updating fitness goals
-- **WorkoutHistory**: List of recent workout sessions
+- **WorkoutHistory**: List of recent workout sessions with clickable details
+- **WorkoutDetailModal**: Detailed workout information and goal achievement status
+- **SmartWatchIntegration**: Comprehensive smartwatch device management and data sync
 
 ## Data Flow
 
@@ -95,5 +100,19 @@ Preferred communication style: Simple, everyday language.
 - **Environment Variables**: DATABASE_URL required for production
 - **Build Commands**: `npm run build` creates production artifacts
 - **Start Command**: `npm start` runs production server
+
+## Recent Changes
+
+### Smartwatch Integration (July 2025)
+- **Comprehensive API Integration**: Added support for Apple HealthKit, Huawei Health Kit, Xiaomi Mi Fitness (via Google Fit), Garmin Connect, and Google Fit APIs
+- **SmartWatch Integration UI**: Created tabbed interface for device management with connection status, sync progress, and integration guides
+- **API Architecture**: Implemented unified SmartWatchAPI interface with authentication, data fetching, and transformation capabilities
+- **Real-time Sync**: Added progress tracking and status indicators for device connections and data synchronization
+- **API Status Tracking**: Integrated awareness of API limitations (Google Fit deprecation 2026, Xiaomi unofficial API)
+
+### Manual Workout Entry Removal (July 2025)
+- **Removed Manual Entry**: Eliminated workout addition functionality to focus on automated smartwatch data import
+- **Enhanced Sample Data**: Expanded July 2025 sample data to 14 entries demonstrating various achievement patterns
+- **Calendar Visualization**: Implemented color-coded achievement levels (green=full, yellow=partial, red=workout only, gray=no activity)
 
 The application uses a monorepo structure with shared TypeScript definitions, enabling type safety across the full stack. The development setup includes hot reloading and error overlays for rapid development.

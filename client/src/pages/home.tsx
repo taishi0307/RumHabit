@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, Settings } from "lucide-react";
+import { CheckCircle, Settings, Watch } from "lucide-react";
 import { GoalSettingsModal } from "@/components/goal-settings-modal";
+import { SmartWatchIntegration } from "@/components/smartwatch-integration";
 import { StatisticsCard } from "@/components/statistics-card";
 import { CalendarView } from "@/components/calendar-view";
 import { WorkoutHistory } from "@/components/workout-history";
@@ -15,6 +16,7 @@ interface Statistics {
 
 export default function Home() {
   const [showGoalSettings, setShowGoalSettings] = useState(false);
+  const [showSmartWatchIntegration, setShowSmartWatchIntegration] = useState(false);
 
   const { data: currentGoal } = useQuery<Goal>({
     queryKey: ["/api/goals/current"],
@@ -41,13 +43,22 @@ export default function Home() {
             <CheckCircle className="text-green-600" />
             習慣トラッカー
           </h1>
-          <button
-            onClick={() => setShowGoalSettings(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <Settings size={20} />
-            目標設定
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowSmartWatchIntegration(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
+            >
+              <Watch size={20} />
+              スマートウォッチ
+            </button>
+            <button
+              onClick={() => setShowGoalSettings(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <Settings size={20} />
+              目標設定
+            </button>
+          </div>
         </div>
       </div>
 
@@ -58,7 +69,25 @@ export default function Home() {
         currentGoal={currentGoal}
       />
 
-
+      {/* Smart Watch Integration Modal */}
+      {showSmartWatchIntegration && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">スマートウォッチ統合</h2>
+                <button
+                  onClick={() => setShowSmartWatchIntegration(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              <SmartWatchIntegration />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics */}
       <StatisticsCard statistics={statistics} />
