@@ -49,92 +49,156 @@ export class MemStorage implements IStorage {
 
   private initializeSampleData() {
     const sampleWorkouts = [
+      // 7月のサンプルデータ - 全目標達成
       {
         id: 1,
-        date: '2025-01-15',
+        date: '2025-07-14',
         time: '07:30:00',
         distance: 5.2,
         heartRate: 155,
         duration: 1800,
         calories: 240,
-        createdAt: new Date('2025-01-15T07:30:00'),
+        createdAt: new Date('2025-07-14T07:30:00'),
       },
       {
         id: 2,
-        date: '2025-01-14',
+        date: '2025-07-13',
         time: '18:45:00',
-        distance: 4.8,
-        heartRate: 145,
-        duration: 1680,
-        calories: 220,
-        createdAt: new Date('2025-01-14T18:45:00'),
-      },
-      {
-        id: 3,
-        date: '2025-01-13',
-        time: '06:15:00',
         distance: 6.1,
         heartRate: 162,
         duration: 2100,
         calories: 280,
-        createdAt: new Date('2025-01-13T06:15:00'),
+        createdAt: new Date('2025-07-13T18:45:00'),
       },
       {
-        id: 4,
-        date: '2025-01-12',
-        time: '07:00:00',
-        distance: 3.2,
-        heartRate: 140,
-        duration: 1200,
-        calories: 150,
-        createdAt: new Date('2025-01-12T07:00:00'),
-      },
-      {
-        id: 5,
-        date: '2025-01-11',
-        time: '19:30:00',
+        id: 3,
+        date: '2025-07-12',
+        time: '06:15:00',
         distance: 5.8,
         heartRate: 158,
         duration: 2400,
         calories: 290,
-        createdAt: new Date('2025-01-11T19:30:00'),
+        createdAt: new Date('2025-07-12T06:15:00'),
+      },
+      // 一部達成データ
+      {
+        id: 4,
+        date: '2025-07-11',
+        time: '07:00:00',
+        distance: 3.2,
+        heartRate: 155,
+        duration: 1800,
+        calories: 150,
+        createdAt: new Date('2025-07-11T07:00:00'),
+      },
+      {
+        id: 5,
+        date: '2025-07-10',
+        time: '19:30:00',
+        distance: 5.2,
+        heartRate: 140,
+        duration: 1200,
+        calories: 220,
+        createdAt: new Date('2025-07-10T19:30:00'),
       },
       {
         id: 6,
-        date: '2025-01-10',
+        date: '2025-07-09',
         time: '08:15:00',
         distance: 4.2,
         heartRate: 142,
         duration: 1500,
         calories: 185,
-        createdAt: new Date('2025-01-10T08:15:00'),
+        createdAt: new Date('2025-07-09T08:15:00'),
       },
+      // 実施のみ（目標未達成）
       {
         id: 7,
-        date: '2025-01-09',
+        date: '2025-07-08',
         time: '06:45:00',
-        distance: 6.5,
-        heartRate: 165,
-        duration: 2700,
-        calories: 320,
-        createdAt: new Date('2025-01-09T06:45:00'),
-      },
-      {
-        id: 8,
-        date: '2025-01-08',
-        time: '18:00:00',
         distance: 2.8,
         heartRate: 135,
         duration: 900,
         calories: 120,
-        createdAt: new Date('2025-01-08T18:00:00'),
+        createdAt: new Date('2025-07-08T06:45:00'),
+      },
+      {
+        id: 8,
+        date: '2025-07-07',
+        time: '18:00:00',
+        distance: 3.1,
+        heartRate: 140,
+        duration: 1200,
+        calories: 140,
+        createdAt: new Date('2025-07-07T18:00:00'),
+      },
+      {
+        id: 9,
+        date: '2025-07-06',
+        time: '07:30:00',
+        distance: 2.5,
+        heartRate: 130,
+        duration: 800,
+        calories: 100,
+        createdAt: new Date('2025-07-06T07:30:00'),
+      },
+      // 追加の7月データ
+      {
+        id: 10,
+        date: '2025-07-05',
+        time: '19:00:00',
+        distance: 5.5,
+        heartRate: 160,
+        duration: 1900,
+        calories: 260,
+        createdAt: new Date('2025-07-05T19:00:00'),
+      },
+      {
+        id: 11,
+        date: '2025-07-04',
+        time: '06:30:00',
+        distance: 4.5,
+        heartRate: 145,
+        duration: 1600,
+        calories: 200,
+        createdAt: new Date('2025-07-04T06:30:00'),
+      },
+      {
+        id: 12,
+        date: '2025-07-03',
+        time: '18:30:00',
+        distance: 6.2,
+        heartRate: 165,
+        duration: 2200,
+        calories: 300,
+        createdAt: new Date('2025-07-03T18:30:00'),
+      },
+      {
+        id: 13,
+        date: '2025-07-02',
+        time: '07:15:00',
+        distance: 3.8,
+        heartRate: 148,
+        duration: 1400,
+        calories: 170,
+        createdAt: new Date('2025-07-02T07:15:00'),
+      },
+      {
+        id: 14,
+        date: '2025-07-01',
+        time: '08:00:00',
+        distance: 5.1,
+        heartRate: 152,
+        duration: 1850,
+        calories: 230,
+        createdAt: new Date('2025-07-01T08:00:00'),
       },
     ];
 
     sampleWorkouts.forEach(workout => {
       this.workouts.set(workout.id, workout);
     });
-    this.currentWorkoutId = 9;
+    this.currentWorkoutId = 15;
 
     // Create corresponding habit data
     const currentGoal = this.goals.get(1)!;
@@ -149,7 +213,7 @@ export class MemStorage implements IStorage {
       };
       this.habitDataMap.set(workout.date, habitData);
     });
-    this.currentHabitDataId = 9;
+    this.currentHabitDataId = 15;
   }
 
   async getCurrentGoal(): Promise<Goal | undefined> {

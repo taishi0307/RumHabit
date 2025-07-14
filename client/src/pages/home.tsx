@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, Settings, Plus } from "lucide-react";
+import { CheckCircle, Settings } from "lucide-react";
 import { GoalSettingsModal } from "@/components/goal-settings-modal";
-import { AddWorkoutModal } from "@/components/add-workout-modal";
 import { StatisticsCard } from "@/components/statistics-card";
 import { CalendarView } from "@/components/calendar-view";
 import { WorkoutHistory } from "@/components/workout-history";
@@ -16,7 +15,6 @@ interface Statistics {
 
 export default function Home() {
   const [showGoalSettings, setShowGoalSettings] = useState(false);
-  const [showAddWorkout, setShowAddWorkout] = useState(false);
 
   const { data: currentGoal } = useQuery<Goal>({
     queryKey: ["/api/goals/current"],
@@ -43,22 +41,13 @@ export default function Home() {
             <CheckCircle className="text-green-600" />
             習慣トラッカー
           </h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowAddWorkout(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
-            >
-              <Plus size={20} />
-              ワークアウト追加
-            </button>
-            <button
-              onClick={() => setShowGoalSettings(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
-            >
-              <Settings size={20} />
-              目標設定
-            </button>
-          </div>
+          <button
+            onClick={() => setShowGoalSettings(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Settings size={20} />
+            目標設定
+          </button>
         </div>
       </div>
 
@@ -69,11 +58,7 @@ export default function Home() {
         currentGoal={currentGoal}
       />
 
-      {/* Add Workout Modal */}
-      <AddWorkoutModal
-        isOpen={showAddWorkout}
-        onClose={() => setShowAddWorkout(false)}
-      />
+
 
       {/* Statistics */}
       <StatisticsCard statistics={statistics} />
