@@ -79,12 +79,62 @@ export class MemStorage implements IStorage {
         calories: 280,
         createdAt: new Date('2025-01-13T06:15:00'),
       },
+      {
+        id: 4,
+        date: '2025-01-12',
+        time: '07:00:00',
+        distance: 3.2,
+        heartRate: 140,
+        duration: 1200,
+        calories: 150,
+        createdAt: new Date('2025-01-12T07:00:00'),
+      },
+      {
+        id: 5,
+        date: '2025-01-11',
+        time: '19:30:00',
+        distance: 5.8,
+        heartRate: 158,
+        duration: 2400,
+        calories: 290,
+        createdAt: new Date('2025-01-11T19:30:00'),
+      },
+      {
+        id: 6,
+        date: '2025-01-10',
+        time: '08:15:00',
+        distance: 4.2,
+        heartRate: 142,
+        duration: 1500,
+        calories: 185,
+        createdAt: new Date('2025-01-10T08:15:00'),
+      },
+      {
+        id: 7,
+        date: '2025-01-09',
+        time: '06:45:00',
+        distance: 6.5,
+        heartRate: 165,
+        duration: 2700,
+        calories: 320,
+        createdAt: new Date('2025-01-09T06:45:00'),
+      },
+      {
+        id: 8,
+        date: '2025-01-08',
+        time: '18:00:00',
+        distance: 2.8,
+        heartRate: 135,
+        duration: 900,
+        calories: 120,
+        createdAt: new Date('2025-01-08T18:00:00'),
+      },
     ];
 
     sampleWorkouts.forEach(workout => {
       this.workouts.set(workout.id, workout);
     });
-    this.currentWorkoutId = 4;
+    this.currentWorkoutId = 9;
 
     // Create corresponding habit data
     const currentGoal = this.goals.get(1)!;
@@ -99,7 +149,7 @@ export class MemStorage implements IStorage {
       };
       this.habitDataMap.set(workout.date, habitData);
     });
-    this.currentHabitDataId = 4;
+    this.currentHabitDataId = 9;
   }
 
   async getCurrentGoal(): Promise<Goal | undefined> {
@@ -117,8 +167,10 @@ export class MemStorage implements IStorage {
   async updateGoal(goal: InsertGoal): Promise<Goal> {
     const id = this.currentGoalId++;
     const newGoal: Goal = {
-      ...goal,
       id,
+      distance: goal.distance ?? 5.0,
+      heartRate: goal.heartRate ?? 150,
+      duration: goal.duration ?? 30,
       createdAt: new Date(),
     };
     this.goals.set(id, newGoal);
@@ -140,11 +192,30 @@ export class MemStorage implements IStorage {
   async createWorkout(workout: InsertWorkout): Promise<Workout> {
     const id = this.currentWorkoutId++;
     const newWorkout: Workout = {
-      ...workout,
       id,
+      date: workout.date,
+      time: workout.time,
+      distance: workout.distance,
+      heartRate: workout.heartRate,
+      duration: workout.duration,
+      calories: workout.calories,
       createdAt: new Date(),
     };
     this.workouts.set(id, newWorkout);
+    
+    // Automatically create or update habit data based on current goal
+    const currentGoal = await this.getCurrentGoal();
+    if (currentGoal) {
+      const habitData = {
+        date: workout.date,
+        distanceAchieved: workout.distance >= currentGoal.distance,
+        heartRateAchieved: workout.heartRate >= currentGoal.heartRate,
+        durationAchieved: workout.duration >= currentGoal.duration * 60,
+        workoutId: id,
+      };
+      await this.createOrUpdateHabitData(habitData);
+    }
+    
     return newWorkout;
   }
 
@@ -161,16 +232,24 @@ export class MemStorage implements IStorage {
     
     if (existing) {
       const updated: HabitData = {
-        ...existing,
-        ...habitData,
+        id: existing.id,
+        date: habitData.date,
+        distanceAchieved: habitData.distanceAchieved ?? existing.distanceAchieved,
+        heartRateAchieved: habitData.heartRateAchieved ?? existing.heartRateAchieved,
+        durationAchieved: habitData.durationAchieved ?? existing.durationAchieved,
+        workoutId: habitData.workoutId ?? existing.workoutId,
       };
       this.habitDataMap.set(habitData.date, updated);
       return updated;
     } else {
       const id = this.currentHabitDataId++;
       const newHabitData: HabitData = {
-        ...habitData,
         id,
+        date: habitData.date,
+        distanceAchieved: habitData.distanceAchieved ?? null,
+        heartRateAchieved: habitData.heartRateAchieved ?? null,
+        durationAchieved: habitData.durationAchieved ?? null,
+        workoutId: habitData.workoutId ?? null,
       };
       this.habitDataMap.set(habitData.date, newHabitData);
       return newHabitData;
