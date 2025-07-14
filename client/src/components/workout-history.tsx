@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { Workout, Goal } from "@shared/schema";
+import { WorkoutDetailModal } from "./workout-detail-modal";
 
 interface WorkoutHistoryProps {
   workouts: Workout[];
@@ -6,6 +8,18 @@ interface WorkoutHistoryProps {
 }
 
 export function WorkoutHistory({ workouts, currentGoal }: WorkoutHistoryProps) {
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const handleWorkoutClick = (workout: Workout) => {
+    setSelectedWorkout(workout);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedWorkout(null);
+  };
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -55,7 +69,11 @@ export function WorkoutHistory({ workouts, currentGoal }: WorkoutHistoryProps) {
             const badges = getAchievementBadges(workout);
             
             return (
-              <div key={workout.id} className="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+              <div 
+                key={workout.id} 
+                className="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all cursor-pointer"
+                onClick={() => handleWorkoutClick(workout)}
+              >
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <p className="font-medium text-gray-800">
@@ -86,6 +104,13 @@ export function WorkoutHistory({ workouts, currentGoal }: WorkoutHistoryProps) {
           })}
         </div>
       )}
+      
+      <WorkoutDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseModal}
+        workout={selectedWorkout}
+        currentGoal={currentGoal}
+      />
     </div>
   );
 }
