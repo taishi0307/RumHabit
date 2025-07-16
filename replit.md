@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack habit tracking application built with React, Express, and PostgreSQL. The app focuses on workout habit tracking with goals for distance, heart rate, and duration. It features a modern UI with calendar visualization, statistics tracking, goal management, and comprehensive smartwatch integration for automatic workout data import from Apple Watch, Huawei Watch, Xiaomi Mi Band, Garmin devices, and Google Fit.
+This is a comprehensive multi-goal habit tracking application built with React, Express, and PostgreSQL. The app supports multiple goal categories (workout, sleep, hydration, etc.) with flexible goal management. It features a modern UI with goal-specific detail pages, mini calendar visualizations, statistics tracking, and comprehensive smartwatch integration for automatic data import from Apple Watch, Huawei Watch, Xiaomi Mi Band, Garmin devices, and Google Fit.
 
 ## User Preferences
 
@@ -35,16 +35,18 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Database Schema
-- **goals**: Stores user fitness goals (distance, heart rate, duration)
+- **goals**: Stores user goals with flexible types (workout-distance, workout-heart-rate, sleep-time, sleep-score, etc.)
 - **workouts**: Records individual workout sessions with metrics
-- **habitData**: Tracks daily achievement status for each goal
+- **habitData**: Tracks daily achievement status for each goal with actual values
 
 ### API Endpoints
-- `GET /api/goals/current` - Retrieve current user goals
-- `PUT /api/goals` - Update user goals
+- `GET /api/goals` - Retrieve all goals or filter by category
+- `POST /api/goals` - Create new goal
+- `PUT /api/goals/:id` - Update specific goal
+- `DELETE /api/goals/:id` - Delete specific goal
 - `GET /api/workouts` - Fetch workout history
 - `POST /api/workouts` - Create new workout entry
-- `GET /api/habit-data` - Retrieve habit tracking data
+- `GET /api/habit-data` - Retrieve habit tracking data with optional filters
 - `POST /api/habit-data` - Create/update daily habit data
 - `GET /api/statistics` - Get aggregated statistics
 - `GET /api/smartwatch/available` - Get available smartwatch APIs
@@ -52,7 +54,9 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/smartwatch/sync/:brand` - Sync workout data from smartwatch
 
 ### Frontend Components
-- **Home Page**: Main dashboard with statistics, calendar, and settings
+- **Home Page**: Goal management dashboard with category-based organization and mini calendar dots
+- **Goal Detail Page**: Individual goal tracking with full calendar, statistics, and achievement history
+- **Settings Page**: Tabbed interface for goal management and smartwatch integration
 - **CalendarView**: Visual habit tracking calendar with color-coded achievement levels
 - **StatisticsCard**: Displays streak, total days, and achievement rates
 - **GoalSettingsModal**: Modal for updating fitness goals
@@ -109,6 +113,13 @@ Preferred communication style: Simple, everyday language.
 - **API Architecture**: Implemented unified SmartWatchAPI interface with authentication, data fetching, and transformation capabilities
 - **Real-time Sync**: Added progress tracking and status indicators for device connections and data synchronization
 - **API Status Tracking**: Integrated awareness of API limitations (Google Fit deprecation 2026, Xiaomi unofficial API)
+
+### Multi-Goal Management System (July 2025)
+- **Flexible Goal Types**: Expanded from workout-only to multiple categories (workout, sleep, hydration, etc.)
+- **Goal Detail Pages**: Individual goal tracking with comprehensive statistics and calendar visualization
+- **Mini Calendar Integration**: Added 7-day mini calendar dots on home page goal cards
+- **Enhanced Database Schema**: Restructured to support flexible goal types with actual value tracking
+- **Clickable Goal Cards**: Goals on home page now navigate to detailed tracking pages
 
 ### Manual Workout Entry Removal (July 2025)
 - **Removed Manual Entry**: Eliminated workout addition functionality to focus on automated smartwatch data import

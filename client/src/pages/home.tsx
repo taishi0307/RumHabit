@@ -154,42 +154,83 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
+                  // Get recent 7 days of data for mini calendar
+                  const recentDays = 7;
+                  const today = new Date();
+                  const miniCalendarData = [];
+                  
+                  for (let i = recentDays - 1; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const record = habitData.find(data => data.goalId === goal.id && data.date === dateStr);
+                    
+                    miniCalendarData.push({
+                      date: dateStr,
+                      achieved: record?.achieved || false,
+                      hasRecord: !!record,
+                    });
+                  }
+                  
                   return (
-                    <div key={goal.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-gray-800">{goal.name}</h3>
-                        <Badge variant={goal.isActive ? "default" : "secondary"}>
-                          {goal.isActive ? "アクティブ" : "非アクティブ"}
-                        </Badge>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <div className="text-2xl font-bold text-gray-800">
-                          {goal.targetValue} {goal.unit}
-                        </div>
-                        <div className="text-sm text-gray-600">目標値</div>
-                      </div>
-
-                      <div className="mb-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-gray-600">達成率</span>
-                          <span className="text-sm font-medium">{achievementRate}%</span>
-                        </div>
-                        <Progress value={achievementRate} className="h-2" />
-                      </div>
-
-                      {recentAchievement && (
-                        <div className="text-xs text-gray-500">
-                          最新: {recentAchievement.actualValue} {goal.unit} ({recentAchievement.date})
-                          <Badge 
-                            variant={recentAchievement.achieved ? "default" : "secondary"}
-                            className="ml-2"
-                          >
-                            {recentAchievement.achieved ? "達成" : "未達成"}
+                    <Link key={goal.id} href={`/goals/${goal.id}`}>
+                      <div className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-gray-800">{goal.name}</h3>
+                          <Badge variant={goal.isActive ? "default" : "secondary"}>
+                            {goal.isActive ? "アクティブ" : "非アクティブ"}
                           </Badge>
                         </div>
-                      )}
-                    </div>
+                        
+                        <div className="mb-3">
+                          <div className="text-2xl font-bold text-gray-800">
+                            {goal.targetValue} {goal.unit}
+                          </div>
+                          <div className="text-sm text-gray-600">目標値</div>
+                        </div>
+
+                        <div className="mb-3">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm text-gray-600">達成率</span>
+                            <span className="text-sm font-medium">{achievementRate}%</span>
+                          </div>
+                          <Progress value={achievementRate} className="h-2" />
+                        </div>
+
+                        {/* Mini Calendar Dots */}
+                        <div className="mb-3">
+                          <div className="text-xs text-gray-600 mb-1">最近7日間</div>
+                          <div className="flex gap-1">
+                            {miniCalendarData.map((day, index) => {
+                              let dotColor = 'bg-gray-200';
+                              if (day.hasRecord) {
+                                dotColor = day.achieved ? 'bg-green-500' : 'bg-red-500';
+                              }
+                              
+                              return (
+                                <div
+                                  key={index}
+                                  className={`w-3 h-3 rounded-full ${dotColor}`}
+                                  title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '未達成') : '記録なし'}`}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {recentAchievement && (
+                          <div className="text-xs text-gray-500">
+                            最新: {recentAchievement.actualValue} {goal.unit} ({recentAchievement.date})
+                            <Badge 
+                              variant={recentAchievement.achieved ? "default" : "secondary"}
+                              className="ml-2"
+                            >
+                              {recentAchievement.achieved ? "達成" : "未達成"}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   );
                 })}
               </div>
