@@ -1,10 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
-import { Target, Settings, Plus, Activity, Moon, Droplet } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Target, Settings, Plus, Activity, Moon, Droplet, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Goal, HabitData } from "@shared/schema";
 
 interface Statistics {
@@ -14,6 +27,9 @@ interface Statistics {
 }
 
 export default function Home() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: goals = [] } = useQuery<Goal[]>({
     queryKey: ["/api/goals"],
   });
@@ -24,6 +40,29 @@ export default function Home() {
 
   const { data: statistics } = useQuery<Statistics>({
     queryKey: ["/api/statistics"],
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (goalId: number) => {
+      const response = await apiRequest("DELETE", `/api/goals/${goalId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/habit-data"] });
+      toast({
+        title: "目標を削除しました",
+        description: "目標とその関連データが正常に削除されました。"
+      });
+    },
+    onError: (error) => {
+      console.error("Goal deletion error:", error);
+      toast({
+        title: "エラーが発生しました",
+        description: "目標の削除に失敗しました。もう一度お試しください。",
+        variant: "destructive"
+      });
+    }
   });
 
   // Group goals by category
@@ -166,16 +205,45 @@ export default function Home() {
                   }
                   
                   return (
-                    <Link key={goal.id} href={`/goal/${goal.id}`}>
-                      <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
+                    <Card key={goal.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
+                          <Link href={`/goal/${goal.id}`} className="flex items-center gap-2 flex-1 cursor-pointer">
                             <h3 className="font-semibold text-gray-800">{goal.name}</h3>
                             <span className="text-sm text-gray-600">
                               {goal.targetValue} {goal.unit}
                             </span>
-                          </div>
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                                onClick={(e) => e.preventDefault()}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>目標を削除しますか？</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  この操作は元に戻せません。目標「{goal.name}」とその関連データがすべて削除されます。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteGoalMutation.mutate(goal.id)}
+                                  disabled={deleteGoalMutation.isPending}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  {deleteGoalMutation.isPending ? "削除中..." : "削除"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
 
                         {/* Mini Calendar Grid */}
@@ -227,7 +295,6 @@ export default function Home() {
                         )}
                         </CardContent>
                       </Card>
-                    </Link>
                   );
                 })}
       </div>

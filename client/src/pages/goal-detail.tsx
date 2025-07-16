@@ -1,17 +1,33 @@
-import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
-import { ArrowLeft, Calendar, TrendingUp, Target } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
+import { ArrowLeft, Calendar, TrendingUp, Target, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Goal, HabitData } from "@shared/schema";
 
 export default function GoalDetailPage() {
   const [, params] = useRoute("/goal/:id");
+  const [, setLocation] = useLocation();
   const goalId = params?.id ? parseInt(params.id) : null;
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: goals = [] } = useQuery<Goal[]>({
     queryKey: ["/api/goals"],
@@ -19,6 +35,30 @@ export default function GoalDetailPage() {
 
   const { data: habitData = [] } = useQuery<HabitData[]>({
     queryKey: ["/api/habit-data"],
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (goalId: number) => {
+      const response = await apiRequest("DELETE", `/api/goals/${goalId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/habit-data"] });
+      toast({
+        title: "目標を削除しました",
+        description: "目標とその関連データが正常に削除されました。"
+      });
+      setLocation("/");
+    },
+    onError: (error) => {
+      console.error("Goal deletion error:", error);
+      toast({
+        title: "エラーが発生しました",
+        description: "目標の削除に失敗しました。もう一度お試しください。",
+        variant: "destructive"
+      });
+    }
   });
 
   const goal = goals.find(g => g.id === goalId);
@@ -135,9 +175,37 @@ export default function GoalDetailPage() {
               </div>
             </div>
           </div>
-          <Badge variant={goal.isActive ? "default" : "secondary"}>
-            {goal.isActive ? "アクティブ" : "非アクティブ"}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant={goal.isActive ? "default" : "secondary"}>
+              {goal.isActive ? "アクティブ" : "非アクティブ"}
+            </Badge>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  削除
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>目標を削除しますか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    この操作は元に戻せません。目標「{goal.name}」とその関連データがすべて削除されます。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteGoalMutation.mutate(goal.id)}
+                    disabled={deleteGoalMutation.isPending}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {deleteGoalMutation.isPending ? "削除中..." : "削除"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
 
