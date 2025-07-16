@@ -30,7 +30,7 @@ Preferred communication style: Simple, everyday language.
 - **ORM**: Drizzle ORM with type-safe queries
 - **Schema**: Shared schema definitions between client and server
 - **Migrations**: Drizzle Kit for schema management
-- **Development Storage**: In-memory storage implementation for development
+- **Production Storage**: PostgreSQL database with DatabaseStorage class implementation
 
 ## Key Components
 
@@ -92,7 +92,7 @@ Preferred communication style: Simple, everyday language.
 ### Development
 - **Frontend**: Vite dev server with HMR
 - **Backend**: tsx with file watching for auto-restart
-- **Database**: Development uses in-memory storage (MemStorage class)
+- **Database**: PostgreSQL database with persistent storage
 
 ### Production
 - **Build Process**: Vite builds frontend to `dist/public`, esbuild bundles server
@@ -104,6 +104,20 @@ Preferred communication style: Simple, everyday language.
 - **Environment Variables**: DATABASE_URL required for production
 - **Build Commands**: `npm run build` creates production artifacts
 - **Start Command**: `npm start` runs production server
+
+## Recent Changes
+
+### Database Integration (July 2025)
+- **PostgreSQL Database**: Migrated from in-memory storage to persistent PostgreSQL database using Neon
+- **Database Storage**: Implemented DatabaseStorage class replacing MemStorage for production use
+- **Schema Migration**: Successfully pushed database schema using Drizzle Kit (`npm run db:push`)
+- **Data Persistence**: All goals, workouts, and habit data now stored persistently in PostgreSQL database
+
+### UI Refinements (July 2025)
+- **Calendar Display**: Updated both home and detail pages to show 5-week calendar (past 4 weeks + current week)
+- **Add Goal Button**: Added prominent goal addition button on home screen top-left with plus icon
+- **Number Formatting**: Sleep time displays 1 decimal place, sleep score shows integers
+- **Text Cleanup**: Removed redundant goal text above home screen calendars for cleaner interface
 
 ## Recent Changes
 

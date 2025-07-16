@@ -291,4 +291,110 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+import { db } from "./db";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getGoals(): Promise<Goal[]> {
+    return await db.select().from(goals);
+  }
+
+  async getGoalsByCategory(category: string): Promise<Goal[]> {
+    return await db.select().from(goals).where(eq(goals.category, category));
+  }
+
+  async createGoal(goal: InsertGoal): Promise<Goal> {
+    const [newGoal] = await db
+      .insert(goals)
+      .values(goal)
+      .returning();
+    return newGoal;
+  }
+
+  async updateGoal(id: number, goal: InsertGoal): Promise<Goal> {
+    const [updatedGoal] = await db
+      .update(goals)
+      .set(goal)
+      .where(eq(goals.id, id))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteGoal(id: number): Promise<boolean> {
+    const result = await db.delete(goals).where(eq(goals.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getWorkouts(): Promise<Workout[]> {
+    return await db.select().from(workouts).orderBy(desc(workouts.date));
+  }
+
+  async getWorkoutsByDateRange(startDate: string, endDate: string): Promise<Workout[]> {
+    return await db
+      .select()
+      .from(workouts)
+      .where(and(
+        gte(workouts.date, startDate),
+        lte(workouts.date, endDate)
+      ))
+      .orderBy(desc(workouts.date));
+  }
+
+  async createWorkout(workout: InsertWorkout): Promise<Workout> {
+    const [newWorkout] = await db
+      .insert(workouts)
+      .values(workout)
+      .returning();
+    return newWorkout;
+  }
+
+  async getHabitData(): Promise<HabitData[]> {
+    return await db.select().from(habitData).orderBy(desc(habitData.date));
+  }
+
+  async getHabitDataByGoal(goalId: number): Promise<HabitData[]> {
+    return await db
+      .select()
+      .from(habitData)
+      .where(eq(habitData.goalId, goalId))
+      .orderBy(desc(habitData.date));
+  }
+
+  async getHabitDataByDate(date: string): Promise<HabitData[]> {
+    return await db
+      .select()
+      .from(habitData)
+      .where(eq(habitData.date, date));
+  }
+
+  async createOrUpdateHabitData(habitDataInput: InsertHabitData): Promise<HabitData> {
+    // Check if record exists
+    const [existing] = await db
+      .select()
+      .from(habitData)
+      .where(and(
+        eq(habitData.goalId, habitDataInput.goalId),
+        eq(habitData.date, habitDataInput.date)
+      ));
+
+    if (existing) {
+      // Update existing record
+      const [updated] = await db
+        .update(habitData)
+        .set(habitDataInput)
+        .where(eq(habitData.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new record
+      const [newRecord] = await db
+        .insert(habitData)
+        .values(habitDataInput)
+        .returning();
+      return newRecord;
+    }
+  }
+}
+
+export const storage = new DatabaseStorage();
