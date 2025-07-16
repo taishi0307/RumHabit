@@ -291,7 +291,11 @@ export function SmartWatchIntegration() {
         // アクセストークンを取得（実際にはlocalStorageなどに保存）
         const accessToken = localStorage.getItem('fitbit_access_token');
         
-        console.log('Fitbit access token:', accessToken ? `Token exists (${accessToken.substring(0, 20)}...)` : 'Token not found');
+        console.log('アクセストークンの状態:', {
+          exists: !!accessToken,
+          length: accessToken?.length || 0,
+          preview: accessToken ? `${accessToken.substring(0, 20)}...` : 'null'
+        });
         
         if (!accessToken) {
           alert('❌ 実際のFitbitアクセストークンが見つかりません。\n\nFitbitデバイスを再接続してください：\n1. 「利用可能」タブでFitbitを選択\n2. 「接続」ボタンを押す\n3. Fitbitアカウントでログイン\n4. 認証完了後に再度同期を試してください');
@@ -313,8 +317,12 @@ export function SmartWatchIntegration() {
         
         setSyncProgress(80);
         
+        console.log('API同期レスポンス:', response.status);
+        
         if (!response.ok) {
-          throw new Error('Fitbitデータの同期に失敗しました');
+          const errorText = await response.text();
+          console.error('同期エラー詳細:', errorText);
+          throw new Error(`Fitbitデータの同期に失敗しました: ${response.status} - ${errorText}`);
         }
         
         const syncResult = await response.json();
@@ -324,7 +332,7 @@ export function SmartWatchIntegration() {
         console.log('同期結果の詳細:', syncResult);
         
         // 実際のFitbitデータかサンプルデータかを判定
-        const isRealData = syncResult.workouts.every(w => !w.id?.includes('sample'));
+        const isRealData = syncResult.workouts && syncResult.workouts.length > 0 && syncResult.workouts.every(w => !w.id?.includes('sample'));
         const message = isRealData 
           ? `✅ ${syncResult.workoutCount}件の実際のFitbitワークアウトデータを同期しました`
           : `⚠️ ${syncResult.workoutCount}件のサンプルデータを同期しました（実際のFitbitデータではありません）`;

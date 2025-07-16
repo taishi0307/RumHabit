@@ -288,7 +288,28 @@ export class FitbitAPI implements SmartWatchAPI {
       console.log('Fetching Fitbit data with token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
       console.log('Date range:', dateRange);
       
+      // まずユーザープロファイルを取得してトークンの有効性を確認
+      console.log('Step 1: Verifying token with user profile...');
+      const profileResponse = await fetch(`${this.baseUrl}/1/user/-/profile.json`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        console.log('User profile:', {
+          displayName: profileData.user?.displayName,
+          memberSince: profileData.user?.memberSince,
+          timezone: profileData.user?.timezone
+        });
+      } else {
+        console.log('Profile request failed:', profileResponse.status, await profileResponse.text());
+      }
+      
       // Get activity logs for the date range
+      console.log('Step 2: Fetching activity logs...');
       const activitiesResponse = await fetch(
         `${this.baseUrl}/1/user/-/activities/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
         {
@@ -319,22 +340,64 @@ export class FitbitAPI implements SmartWatchAPI {
       }
 
       const activitiesData = JSON.parse(responseText);
-      console.log('Fitbit activities data:', activitiesData);
+      console.log('Fitbit activities data:', JSON.stringify(activitiesData, null, 2));
+      console.log('Activities array length:', activitiesData.activities?.length || 0);
+      
+      // もしアクティビティが空の場合、別のAPIエンドポイントも試す
+      if (!activitiesData.activities || activitiesData.activities.length === 0) {
+        console.log('No activities found, trying daily activities endpoint...');
+        
+        // 過去30日間の各日のアクティビティを取得
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        
+        for (let d = new Date(thirtyDaysAgo); d <= today; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          try {
+            const dailyResponse = await fetch(
+              `${this.baseUrl}/1/user/-/activities/date/${dateStr}.json`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Accept': 'application/json'
+                }
+              }
+            );
+            
+            if (dailyResponse.ok) {
+              const dailyData = await dailyResponse.json();
+              console.log(`Daily data for ${dateStr}:`, JSON.stringify(dailyData, null, 2));
+              
+              // activitiesやexercisesがあるかチェック
+              if (dailyData.activities && dailyData.activities.length > 0) {
+                console.log(`Found ${dailyData.activities.length} activities for ${dateStr}`);
+                activitiesData.activities = [...(activitiesData.activities || []), ...dailyData.activities];
+              }
+            }
+          } catch (error) {
+            console.log(`Error fetching daily data for ${dateStr}:`, error.message);
+          }
+        }
+      }
       
       // Transform Fitbit activities to WorkoutData format
       for (const activity of activitiesData.activities || []) {
+        console.log('Processing activity:', JSON.stringify(activity, null, 2));
+        
         const workout: WorkoutData = {
-          id: activity.logId.toString(),
-          date: activity.startDate,
-          time: activity.startTime,
-          duration: Math.round(activity.duration / 1000), // Convert ms to seconds
+          id: activity.logId?.toString() || activity.activityId?.toString() || `fitbit-${Date.now()}`,
+          date: activity.startDate || activity.originalStartTime?.split('T')[0] || new Date().toISOString().split('T')[0],
+          time: activity.startTime || activity.originalStartTime?.split('T')[1]?.split('.')[0] || '12:00:00',
+          duration: Math.round((activity.duration || activity.activeDuration || 0) / 1000), // Convert ms to seconds
           distance: activity.distance || 0,
           heartRate: activity.averageHeartRate || 0,
           calories: activity.calories || 0,
-          activityType: activity.activityName,
+          activityType: activity.activityName || activity.name || 'Unknown',
           deviceId: 'fitbit',
           rawData: activity
         };
+        
+        console.log('Converted workout:', JSON.stringify(workout, null, 2));
         
         workouts.push(workout);
       }
@@ -461,7 +524,18 @@ export const smartWatchRoutes = (app: any) => {
         console.log('⚠️  DETECTED SAMPLE TOKEN - This is not a real Fitbit token!');
       }
       
-      const workoutData = await apiManager.syncWorkoutData(brand, accessToken, dateRange);
+      // より適切な日付範囲を設定（過去30日間）
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      const actualDateRange = {
+        start: thirtyDaysAgo.toISOString().split('T')[0],
+        end: today.toISOString().split('T')[0]
+      };
+
+      console.log('Using date range:', actualDateRange);
+      
+      const workoutData = await apiManager.syncWorkoutData(brand, accessToken, actualDateRange);
       
       console.log(`Retrieved ${workoutData.length} workouts from ${brand}`);
       
