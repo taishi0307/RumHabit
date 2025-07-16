@@ -159,14 +159,6 @@ export default function Home() {
                           </Badge>
                         </div>
 
-                        <div className="mb-3">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm text-gray-600">達成率</span>
-                            <span className="text-sm font-medium">{achievementRate}%</span>
-                          </div>
-                          <Progress value={achievementRate} className="h-2" />
-                        </div>
-
                         {/* Mini Calendar Grid */}
                         <div className="mb-3">
                           <div className="text-center text-xs text-gray-600 mb-2">
@@ -175,14 +167,16 @@ export default function Home() {
                           <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
                               let bgColor = 'bg-gray-100';
-                              let textColor = 'text-gray-400';
+                              let textColor = 'text-white';
                               
                               if (day.hasRecord && day.achieved) {
                                 bgColor = 'bg-green-500';
                                 textColor = 'text-white';
-                              } else if (day.isInRange) {
-                                // All dates in range (including future) get white text
-                                textColor = 'text-white';
+                              }
+                              
+                              // Period outside range gets gray text
+                              if (!day.isInRange) {
+                                textColor = 'text-gray-400';
                               }
                               
                               return (
