@@ -1,5 +1,5 @@
 // Pure JavaScript - no React or TypeScript
-console.log("Starting pure JavaScript app...");
+console.log("Starting pure JavaScript app v123...");
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
