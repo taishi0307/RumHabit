@@ -108,6 +108,13 @@ Cost optimization: Use free tier only - no paid server costs.
 
 ## Recent Changes
 
+### useRefエラー解決とアプリケーション復元 (July 2025)
+- **Gitコミット復元**: 2f652b20970ccbb0adbb73743ac405ef53be414f の動作する状態に復元
+- **認証システム除去**: JWTトークンベース認証を完全に削除し、シンプルな固定ユーザーID使用
+- **キャッシュ問題解決**: 全てのキャッシュファイル削除、Service Worker最小化、ブラウザキャッシュ無効化
+- **useRefエラー修正**: React useRefエラーの原因となるキャッシュ問題を解決
+- **アプリケーション安定化**: 正常動作確認、全機能が期待通りに動作
+
 ### Free Tier Optimization (July 2025)
 - **Database Connection Pool**: Optimized for free tier with max 1 connection, reduced timeout
 - **Logging Optimization**: Minimized verbose logging to reduce memory usage
