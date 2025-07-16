@@ -229,6 +229,9 @@ export default function Home() {
                               // Period outside range gets gray text
                               if (!day.isInRange) {
                                 textColor = 'text-gray-400';
+                              } else {
+                                // All dates in range (including future) get white text
+                                textColor = 'text-white';
                               }
                               
                               return (
