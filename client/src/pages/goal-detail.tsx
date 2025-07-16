@@ -180,9 +180,21 @@ export default function GoalDetailPage() {
               </div>
               
               <div className="grid grid-cols-7 gap-1">
-                {/* Generate calendar for July 2025 */}
-                {Array.from({ length: 31 }, (_, i) => {
-                  const date = new Date(2025, 6, i + 1); // July 2025
+                {/* Generate calendar for 5 weeks (past 4 weeks + current week) */}
+                {Array.from({ length: 35 }, (_, i) => {
+                  // Find the start of current week (Sunday)
+                  const today = new Date();
+                  const currentWeekStart = new Date(today);
+                  currentWeekStart.setDate(today.getDate() - today.getDay());
+                  currentWeekStart.setHours(0, 0, 0, 0);
+                  
+                  // Go back 4 weeks from current week start
+                  const startOfWeek = new Date(currentWeekStart);
+                  startOfWeek.setDate(currentWeekStart.getDate() - 28); // 4 weeks back
+                  
+                  // Calculate the date for this grid cell
+                  const date = new Date(startOfWeek);
+                  date.setDate(startOfWeek.getDate() + i);
                   
                   // Format date to match data format (YYYY-MM-DD)
                   const year = date.getFullYear();
@@ -198,11 +210,9 @@ export default function GoalDetailPage() {
                   return (
                     <div
                       key={i}
-                      className={`aspect-square flex items-center justify-center text-xs rounded ${bgColor} ${
-                        status === 'achieved' ? 'text-white' : 'text-white'
-                      }`}
+                      className={`aspect-square flex items-center justify-center text-xs rounded ${bgColor} text-white`}
                     >
-                      {i + 1}
+                      {date.getDate()}
                     </div>
                   );
                 })}
