@@ -168,9 +168,6 @@ export default function Home() {
                               {goal.targetValue} {goal.unit}
                             </span>
                           </div>
-                          <Badge variant={goal.isActive ? "default" : "secondary"}>
-                            {goal.isActive ? "アクティブ" : "非アクティブ"}
-                          </Badge>
                         </div>
 
                         {/* Mini Calendar Grid */}
