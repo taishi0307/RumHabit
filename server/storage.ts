@@ -110,9 +110,9 @@ export class MemStorage implements IStorage {
     });
     this.currentWorkoutId = 15;
 
-    // Generate habit data for each goal and workout
+    // Generate habit data only for the default goal (id: 1)
     sampleWorkouts.forEach(workout => {
-      // Distance goal (id: 1)
+      // Only create habit data for the default workout goal (id: 1)
       const distanceHabit: HabitData = {
         id: this.currentHabitDataId++,
         date: workout.date,
@@ -122,34 +122,12 @@ export class MemStorage implements IStorage {
         workoutId: workout.id,
       };
       this.habitDataList.push(distanceHabit);
-
-      // Heart rate goal (id: 2)
-      const heartRateHabit: HabitData = {
-        id: this.currentHabitDataId++,
-        date: workout.date,
-        goalId: 2,
-        achieved: workout.heartRate >= 150,
-        actualValue: workout.heartRate,
-        workoutId: workout.id,
-      };
-      this.habitDataList.push(heartRateHabit);
-
-      // Duration goal (id: 3) - converting seconds to minutes
-      const durationHabit: HabitData = {
-        id: this.currentHabitDataId++,
-        date: workout.date,
-        goalId: 3,
-        achieved: workout.duration >= 1800, // 30 minutes
-        actualValue: workout.duration / 60, // convert to minutes
-        workoutId: workout.id,
-      };
-      this.habitDataList.push(durationHabit);
     });
 
-    // Add some sample sleep data
+    // Add some sample sleep data only for the default sleep goal (id: 2)
     const sleepDates = ["2025-07-14", "2025-07-13", "2025-07-12", "2025-07-11", "2025-07-10"];
     sleepDates.forEach(date => {
-      // Sleep time goal (id: 4)
+      // Sleep time data for default sleep goal (id: 2)
       const sleepTime = 6.5 + Math.random() * 3; // 6.5 to 9.5 hours
       const sleepTimeHabit: HabitData = {
         id: this.currentHabitDataId++,
@@ -160,18 +138,6 @@ export class MemStorage implements IStorage {
         workoutId: null,
       };
       this.habitDataList.push(sleepTimeHabit);
-
-      // Sleep score goal (id: 2)
-      const sleepScore = 70 + Math.random() * 25; // 70 to 95
-      const sleepScoreHabit: HabitData = {
-        id: this.currentHabitDataId++,
-        date: date,
-        goalId: 2,
-        achieved: sleepScore >= 85,
-        actualValue: sleepScore,
-        workoutId: null,
-      };
-      this.habitDataList.push(sleepScoreHabit);
     });
   }
 
