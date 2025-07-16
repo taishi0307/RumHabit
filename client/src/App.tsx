@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import SettingsPage from "@/pages/settings";
 import GoalDetailPage from "@/pages/goal-detail";
 import AddGoalPage from "@/pages/add-goal";
+import RecordDetailPage from "@/pages/record-detail";
 import { useEffect } from "react";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/add-goal/workout" component={() => <AddGoalPage goalType="workout" />} />
       <Route path="/add-goal/sleep" component={() => <AddGoalPage goalType="sleep" />} />
       <Route path="/goal/:id" component={GoalDetailPage} />
+      <Route path="/goal/:goalId/record/:recordId" component={RecordDetailPage} />
       <Route component={NotFound} />
     </Switch>
   );

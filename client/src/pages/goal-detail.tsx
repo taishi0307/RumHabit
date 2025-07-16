@@ -344,17 +344,19 @@ export default function GoalDetailPage() {
                 <p className="text-gray-500 text-center py-4">記録がありません</p>
               ) : (
                 recentRecords.map((record, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <div className="font-medium">{record.date}</div>
-                      <div className="text-sm text-gray-600">
-                        {record.actualValue} {goal.unit}
+                  <Link key={index} href={`/goal/${goal.id}/record/${record.id}`}>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                      <div>
+                        <div className="font-medium">{record.date}</div>
+                        <div className="text-sm text-gray-600">
+                          {record.actualValue} {goal.unit}
+                        </div>
                       </div>
+                      <Badge variant={record.achieved ? "default" : "secondary"}>
+                        {record.achieved ? "達成" : "未達成"}
+                      </Badge>
                     </div>
-                    <Badge variant={record.achieved ? "default" : "secondary"}>
-                      {record.achieved ? "達成" : "未達成"}
-                    </Badge>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
