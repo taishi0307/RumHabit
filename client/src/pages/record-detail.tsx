@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,24 @@ import { Link } from "wouter";
 import type { HabitData, Goal } from "@shared/schema";
 
 export default function RecordDetailPage() {
-  const { goalId, recordId } = useParams<{ goalId: string; recordId: string }>();
+  const [match, params] = useRoute("/goal/:goalId/record/:recordId");
+  
+  console.log('RecordDetailPage match:', match);
+  console.log('RecordDetailPage params:', params);
+  
+  if (!match) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">ルートが一致しません</div>
+        </div>
+      </div>
+    );
+  }
 
-  console.log('RecordDetailPage params:', { goalId, recordId });
+  const { goalId, recordId } = params as { goalId: string; recordId: string };
+  
+  console.log('RecordDetailPage goalId:', goalId, 'recordId:', recordId);
 
   const { data: goal, isLoading: goalLoading } = useQuery<Goal>({
     queryKey: [`/api/goals/${goalId}`],
@@ -24,7 +39,7 @@ export default function RecordDetailPage() {
     return (
       <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">読み込み中...</div>
+          <div className="text-gray-500">読み込み中...goalId: {goalId}, recordId: {recordId}</div>
         </div>
       </div>
     );
@@ -34,19 +49,19 @@ export default function RecordDetailPage() {
     return (
       <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">目標が見つかりません</div>
+          <div className="text-gray-500">目標が見つかりません (goalId: {goalId})</div>
         </div>
       </div>
     );
   }
 
-  const record = habitData?.find(data => data.id === parseInt(recordId));
+  const record = habitData?.find(data => data.id === parseInt(recordId || '0'));
 
   if (!record) {
     return (
       <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">記録が見つかりません</div>
+          <div className="text-gray-500">記録が見つかりません (recordId: {recordId})</div>
         </div>
       </div>
     );
