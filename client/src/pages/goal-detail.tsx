@@ -184,6 +184,7 @@ export default function GoalDetailPage() {
                 {Array.from({ length: 35 }, (_, i) => {
                   // Find the start of current week (Sunday)
                   const today = new Date();
+                  today.setHours(23, 59, 59, 999); // Set to end of today
                   const currentWeekStart = new Date(today);
                   currentWeekStart.setDate(today.getDate() - today.getDay());
                   currentWeekStart.setHours(0, 0, 0, 0);
@@ -195,6 +196,7 @@ export default function GoalDetailPage() {
                   // Calculate the date for this grid cell
                   const date = new Date(startOfWeek);
                   date.setDate(startOfWeek.getDate() + i);
+                  date.setHours(12, 0, 0, 0); // Set to noon for comparison
                   
                   // Format date to match data format (YYYY-MM-DD)
                   const year = date.getFullYear();
@@ -205,12 +207,27 @@ export default function GoalDetailPage() {
                   const status = getDayStatus(date);
                   
                   let bgColor = 'bg-gray-100';
-                  if (status === 'achieved') bgColor = 'bg-green-500';
+                  let textColor = 'text-white';
+                  
+                  if (status === 'achieved') {
+                    bgColor = 'bg-green-500';
+                    textColor = 'text-white';
+                  }
+                  
+                  // Display range: from 4 weeks ago to current week end
+                  const startDate = new Date(startOfWeek);
+                  const endDate = new Date(today);
+                  const isInRange = date >= startDate && date <= endDate;
+                  
+                  // Period outside range gets gray text
+                  if (!isInRange) {
+                    textColor = 'text-gray-400';
+                  }
                   
                   return (
                     <div
                       key={i}
-                      className={`aspect-square flex items-center justify-center text-xs rounded ${bgColor} text-white`}
+                      className={`aspect-square flex items-center justify-center text-xs rounded ${bgColor} ${textColor}`}
                     >
                       {date.getDate()}
                     </div>
