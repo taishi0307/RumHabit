@@ -109,17 +109,22 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get calendar data for recent 35 days (7x5 grid = 35 days)
+                  // Get calendar data for 5 weeks (past 4 weeks + current week)
                   const today = new Date();
                   today.setHours(23, 59, 59, 999); // Set to end of today
                   
-                  const startDate = new Date(today);
-                  startDate.setDate(today.getDate() - 34); // 35 days back
-                  startDate.setHours(0, 0, 0, 0); // Set to start of day
+                  // Find the start of current week (Sunday)
+                  const currentWeekStart = new Date(today);
+                  currentWeekStart.setDate(today.getDate() - today.getDay());
+                  currentWeekStart.setHours(0, 0, 0, 0);
                   
-                  // Find the start of the week for the grid
-                  const startOfWeek = new Date(startDate);
-                  startOfWeek.setDate(startDate.getDate() - startDate.getDay());
+                  // Go back 4 weeks from current week start
+                  const startOfWeek = new Date(currentWeekStart);
+                  startOfWeek.setDate(currentWeekStart.getDate() - 28); // 4 weeks back
+                  
+                  // Display range: from 4 weeks ago to current week end
+                  const startDate = new Date(startOfWeek);
+                  const endDate = new Date(today);
                   
                   const miniCalendarData = [];
                   
@@ -136,7 +141,7 @@ export default function Home() {
                     const dateStr = `${year}-${month}-${day}`;
                     
                     const record = habitData.find(data => data.goalId === goal.id && data.date === dateStr);
-                    const isInRange = date >= startDate && date <= today;
+                    const isInRange = date >= startDate && date <= endDate;
                     
                     miniCalendarData.push({
                       date: dateStr,
