@@ -150,11 +150,7 @@ export default function Home() {
               <Plus className="h-4 w-4" />
             </Button>
           </Link>
-          {user && (
-            <div className="text-sm text-gray-600">
-              こんにちは、{user.email}さん
-            </div>
-          )}
+
         </div>
         <div className="flex items-center space-x-2">
           <Link href="/settings">
