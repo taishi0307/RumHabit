@@ -48,6 +48,11 @@ export default function LoginPage() {
     },
   });
 
+  // Debug form state
+  const registrationFormState = registrationForm.watch();
+  console.log("Registration form state:", registrationFormState);
+  console.log("Registration form errors:", registrationForm.formState.errors);
+
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
       const response = await apiRequest("POST", "/api/auth/login", data);
@@ -200,7 +205,12 @@ export default function LoginPage() {
                         <Input 
                           type="email" 
                           placeholder="メールアドレスを入力"
-                          {...field}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                          disabled={field.disabled}
                         />
                       </FormControl>
                       <FormMessage />
@@ -218,7 +228,12 @@ export default function LoginPage() {
                           <Input 
                             type={showPassword ? "text" : "password"}
                             placeholder="パスワードを入力"
-                            {...field}
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                            disabled={field.disabled}
                           />
                           <Button
                             type="button"

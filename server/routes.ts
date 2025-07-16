@@ -41,9 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userData = {
         email,
         password,
-        firstName: null,
-        lastName: null,
-        profileImageUrl: null,
+        firstName: undefined,
+        lastName: undefined,
+        profileImageUrl: undefined,
       };
 
       const user = await createUser(userData);
