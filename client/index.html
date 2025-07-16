@@ -19,33 +19,8 @@
     <title>習慣トラッカー</title>
   </head>
   <body>
-    <div id="root">
-      <div style="min-height: 100vh; background-color: #f0f8ff; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;">
-        <div style="text-align: center; padding: 40px; background-color: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <h1 style="color: #1e3a8a; font-size: 2.5rem; margin-bottom: 20px; margin-top: 0;">
-            習慣トラッカー
-          </h1>
-          <p style="color: #64748b; font-size: 1.2rem; margin-bottom: 30px;">
-            アプリケーションが正常に動作しています！<br/>
-            直接HTMLでレンダリング
-          </p>
-          <button onclick="alert('ボタンクリックが動作しました！')" style="padding: 15px 30px; background-color: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold;">
-            テストボタン
-          </button>
-        </div>
-      </div>
-    </div>
-    <script type="module" src="/src/main.js?v=cache-bust-123"></script>
-    <script>
-      // Prevent useRef error by catching and ignoring it
-      window.addEventListener('error', (event) => {
-        if (event.error && event.error.message && event.error.message.includes('useRef')) {
-          event.preventDefault();
-          console.log('useRef error caught and ignored');
-          return false;
-        }
-      });
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
 
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
