@@ -89,6 +89,15 @@ export function SmartWatchIntegration() {
       lastSync: null,
       supportedMetrics: ['heart_rate', 'distance', 'calories', 'steps', 'activity_segments'],
       apiStatus: 'deprecated'
+    },
+    {
+      id: 'pixel-watch',
+      name: 'Pixel Watch',
+      brand: 'Google',
+      connected: false,
+      lastSync: null,
+      supportedMetrics: ['heart_rate', 'distance', 'calories', 'steps', 'workout_sessions', 'sleep_tracking'],
+      apiStatus: 'available'
     }
   ]);
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
