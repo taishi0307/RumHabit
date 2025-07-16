@@ -130,81 +130,75 @@ export default function GoalDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
-      {/* Back Button */}
-      <div className="mb-4">
+      {/* Top Navigation */}
+      <div className="flex justify-between items-center mb-4">
         <Link href="/">
           <Button variant="outline" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             戻る
           </Button>
         </Link>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="h-4 w-4 mr-2" />
+              削除
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>目標を削除しますか？</AlertDialogTitle>
+              <AlertDialogDescription>
+                この操作は元に戻せません。目標「{goal.name}」とその関連データがすべて削除されます。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>キャンセル</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteGoalMutation.mutate(goal.id)}
+                disabled={deleteGoalMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteGoalMutation.isPending ? "削除中..." : "削除"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">{goal.name}</h1>
-            <div className="text-gray-600 mt-1">
-              {goal.category === 'workout' && goal.type === 'workout' && (
-                <div className="flex flex-wrap gap-4">
-                  {goal.targetDistance && (
-                    <span>距離: {goal.targetDistance}km</span>
-                  )}
-                  {goal.targetTime && (
-                    <span>時間: {goal.targetTime}分</span>
-                  )}
-                  {goal.targetHeartRate && (
-                    <span>心拍数: {goal.targetHeartRate}bpm</span>
-                  )}
-                  {goal.targetCalories && (
-                    <span>カロリー: {goal.targetCalories}kcal</span>
-                  )}
-                </div>
+        <h1 className="text-3xl font-bold text-gray-800">{goal.name}</h1>
+        <div className="text-gray-600 mt-1">
+          {goal.category === 'workout' && goal.type === 'workout' && (
+            <div className="flex flex-wrap gap-4">
+              {goal.targetDistance && (
+                <span>距離: {goal.targetDistance}km</span>
               )}
-              {goal.category === 'sleep' && goal.type === 'sleep' && (
-                <div className="flex flex-wrap gap-4">
-                  {goal.targetSleepTime && (
-                    <span>睡眠時間: {goal.targetSleepTime}時間</span>
-                  )}
-                  {goal.targetSleepScore && (
-                    <span>睡眠スコア: {goal.targetSleepScore}点</span>
-                  )}
-                </div>
+              {goal.targetTime && (
+                <span>時間: {goal.targetTime}分</span>
               )}
-              {goal.targetValue && (
-                <span>目標: {goal.targetValue} {goal.unit}</span>
+              {goal.targetHeartRate && (
+                <span>心拍数: {goal.targetHeartRate}bpm</span>
+              )}
+              {goal.targetCalories && (
+                <span>カロリー: {goal.targetCalories}kcal</span>
               )}
             </div>
-          </div>
-          <div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  削除
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>目標を削除しますか？</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    この操作は元に戻せません。目標「{goal.name}」とその関連データがすべて削除されます。
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => deleteGoalMutation.mutate(goal.id)}
-                    disabled={deleteGoalMutation.isPending}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {deleteGoalMutation.isPending ? "削除中..." : "削除"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          )}
+          {goal.category === 'sleep' && goal.type === 'sleep' && (
+            <div className="flex flex-wrap gap-4">
+              {goal.targetSleepTime && (
+                <span>睡眠時間: {goal.targetSleepTime}時間</span>
+              )}
+              {goal.targetSleepScore && (
+                <span>睡眠スコア: {goal.targetSleepScore}点</span>
+              )}
+            </div>
+          )}
+          {goal.targetValue && (
+            <span>目標: {goal.targetValue} {goal.unit}</span>
+          )}
         </div>
       </div>
 
