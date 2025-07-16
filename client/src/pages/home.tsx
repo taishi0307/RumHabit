@@ -94,44 +94,19 @@ export default function Home() {
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <Target className="text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-800">
             目標管理
           </h1>
           <Link href="/settings">
-            <Button>
-              <Settings className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
+              <Settings className="h-3 w-3 mr-1" />
               設定
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Statistics Overview */}
-      {statistics && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>統計情報</CardTitle>
-            <CardDescription>全体的な達成状況</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-around items-center">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">{statistics.streak}</div>
-                <div className="text-sm text-gray-600">連続達成日数</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">{statistics.totalWorkoutDays}</div>
-                <div className="text-sm text-gray-600">総活動日数</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">{statistics.averageAchievementRate}%</div>
-                <div className="text-sm text-gray-600">平均達成率</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
 
       {/* Goals by Category */}
       <div className="space-y-6">
@@ -139,9 +114,6 @@ export default function Home() {
           <Card key={category}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <div className={`p-2 rounded-lg ${getCategoryColor(category)} text-white`}>
-                  {getCategoryIcon(category)}
-                </div>
                 {getCategoryName(category)}
               </CardTitle>
               <CardDescription>
