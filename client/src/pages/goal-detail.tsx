@@ -209,7 +209,7 @@ export default function GoalDetailPage() {
                     <div
                       key={i}
                       className={`aspect-square flex items-center justify-center text-xs rounded ${bgColor} ${
-                        status !== 'none' ? 'text-white' : 'text-gray-600'
+                        status === 'achieved' ? 'text-white' : 'text-white'
                       }`}
                     >
                       {i + 1}

@@ -93,10 +93,7 @@ export default function Home() {
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">
-            目標管理
-          </h1>
+        <div className="flex justify-end items-center">
           <Link href="/settings">
             <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
               <Settings className="h-3 w-3 mr-1" />
@@ -191,17 +188,12 @@ export default function Home() {
                           <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
                               let bgColor = 'bg-gray-100';
-                              let textColor = 'text-white';
+                              let textColor = 'text-gray-400';
                               
                               if (day.hasRecord && day.achieved) {
                                 bgColor = 'bg-green-500';
                                 textColor = 'text-white';
-                              }
-                              
-                              // Period outside range gets gray text
-                              if (!day.isInRange) {
-                                textColor = 'text-gray-400';
-                              } else {
+                              } else if (day.isInRange) {
                                 // All dates in range (including future) get white text
                                 textColor = 'text-white';
                               }
