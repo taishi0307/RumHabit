@@ -92,34 +92,20 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <div className="flex justify-end items-center">
-          <Link href="/settings">
-            <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
-              <Settings className="h-3 w-3 mr-1" />
-              設定
-            </Button>
-          </Link>
-        </div>
+      <div className="flex justify-end items-center mb-6">
+        <Link href="/settings">
+          <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
+            <Settings className="h-3 w-3 mr-1" />
+            設定
+          </Button>
+        </Link>
       </div>
 
 
 
-      {/* Goals by Category */}
-      <div className="space-y-6">
-        {Object.entries(goalsByCategory).map(([category, categoryGoals]) => (
-          <Card key={category}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {getCategoryName(category)}
-              </CardTitle>
-              <CardDescription>
-                {categoryGoals.length}個の目標
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categoryGoals.map((goal) => {
+      {/* Goals */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {goals.map((goal) => {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
@@ -158,8 +144,9 @@ export default function Home() {
                   }
                   
                   return (
-                    <Link key={goal.id} href={`/goals/${goal.id}`}>
-                      <div className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer">
+                    <Link key={goal.id} href={`/goal/${goal.id}`}>
+                      <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-gray-800">{goal.name}</h3>
@@ -222,14 +209,11 @@ export default function Home() {
                             </Badge>
                           </div>
                         )}
-                      </div>
+                        </CardContent>
+                      </Card>
                     </Link>
                   );
                 })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       {/* Empty State */}
