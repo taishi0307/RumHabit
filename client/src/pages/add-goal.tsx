@@ -59,15 +59,15 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
     defaultValues: {
       name: "",
       type: "",
-      targetValue: 0,
+      targetValue: null,
       unit: "",
       category: "",
-      targetDistance: 0,
-      targetTime: 0,
-      targetHeartRate: 0,
-      targetCalories: 0,
-      targetSleepTime: 0,
-      targetSleepScore: 0,
+      targetDistance: null,
+      targetTime: null,
+      targetHeartRate: null,
+      targetCalories: null,
+      targetSleepTime: null,
+      targetSleepScore: null,
       isActive: true
     }
   });
@@ -143,16 +143,16 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
   };
 
   const onSubmit = (data: InsertGoal) => {
-    // Convert string values to numbers, handling both strings and numbers
+    // Ensure all numeric values are properly converted
     const processedData = {
       ...data,
-      targetValue: data.targetValue ? (typeof data.targetValue === 'string' ? Number(data.targetValue) : data.targetValue) : null,
-      targetDistance: data.targetDistance ? (typeof data.targetDistance === 'string' ? Number(data.targetDistance) : data.targetDistance) : null,
-      targetTime: data.targetTime ? (typeof data.targetTime === 'string' ? Number(data.targetTime) : data.targetTime) : null,
-      targetHeartRate: data.targetHeartRate ? (typeof data.targetHeartRate === 'string' ? Number(data.targetHeartRate) : data.targetHeartRate) : null,
-      targetCalories: data.targetCalories ? (typeof data.targetCalories === 'string' ? Number(data.targetCalories) : data.targetCalories) : null,
-      targetSleepTime: data.targetSleepTime ? (typeof data.targetSleepTime === 'string' ? Number(data.targetSleepTime) : data.targetSleepTime) : null,
-      targetSleepScore: data.targetSleepScore ? (typeof data.targetSleepScore === 'string' ? Number(data.targetSleepScore) : data.targetSleepScore) : null,
+      targetValue: data.targetValue === null || data.targetValue === undefined ? null : Number(data.targetValue),
+      targetDistance: data.targetDistance === null || data.targetDistance === undefined ? null : Number(data.targetDistance),
+      targetTime: data.targetTime === null || data.targetTime === undefined ? null : Number(data.targetTime),
+      targetHeartRate: data.targetHeartRate === null || data.targetHeartRate === undefined ? null : Number(data.targetHeartRate),
+      targetCalories: data.targetCalories === null || data.targetCalories === undefined ? null : Number(data.targetCalories),
+      targetSleepTime: data.targetSleepTime === null || data.targetSleepTime === undefined ? null : Number(data.targetSleepTime),
+      targetSleepScore: data.targetSleepScore === null || data.targetSleepScore === undefined ? null : Number(data.targetSleepScore),
     };
     createGoalMutation.mutate(processedData);
   };
@@ -251,8 +251,9 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
                             type="number" 
                             step={field.id === 'heart-rate' || field.id === 'calories' || field.id === 'score' ? '1' : '0.1'}
                             placeholder={`${field.name}を入力`}
+                            value={formField.value === null || formField.value === undefined ? '' : formField.value}
                             onChange={(e) => {
-                              const value = e.target.value === '' ? 0 : Number(e.target.value);
+                              const value = e.target.value === '' ? null : Number(e.target.value);
                               formField.onChange(value);
                             }}
                           />
