@@ -1,13 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Target, Settings, Plus, Activity, Moon, Droplet, LogOut } from "lucide-react";
+import { Target, Settings, Plus, Activity, Moon, Droplet } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Goal, HabitData } from "@shared/schema";
-import { useAuth } from "@/hooks/useAuth";
-// import { useSimpleToast } from "@/hooks/useSimpleToast";
 import { apiRequest } from "@/lib/queryClient";
 
 interface Statistics {
@@ -17,8 +15,6 @@ interface Statistics {
 }
 
 export default function Home() {
-  const { user } = useAuth();
-  // const { toast } = useSimpleToast();
   const queryClient = useQueryClient();
 
   const { data: goals = [] } = useQuery<Goal[]>({
@@ -33,31 +29,14 @@ export default function Home() {
     queryKey: ["/api/statistics"],
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/auth/logout", {});
-    },
-    onSuccess: () => {
-      // Clear auth token from localStorage
-      localStorage.removeItem("auth_token");
-      queryClient.clear();
-      alert("ログアウトしました");
-      // ページリロードでログイン画面に戻る
-      window.location.reload();
-    },
-    onError: (error: any) => {
-      alert("ログアウトエラー: " + (error.message || "ログアウトに失敗しました"));
-    },
-  });
-
   // Group goals by category
-  const goalsByCategory = goals.reduce((acc, goal) => {
+  const goalsByCategory = goals?.reduce((acc, goal) => {
     if (!acc[goal.category]) {
       acc[goal.category] = [];
     }
     acc[goal.category].push(goal);
     return acc;
-  }, {} as Record<string, Goal[]>);
+  }, {} as Record<string, Goal[]>) || {};
 
   // Calculate achievement rate for each goal
   const getGoalAchievementRate = (goalId: number) => {
@@ -119,11 +98,9 @@ export default function Home() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">習慣トラッカー</h1>
-          {user && (
-            <p className="text-sm text-gray-600 mt-1">
-              こんにちは、{user.firstName || user.email}さん
-            </p>
-          )}
+          <p className="text-sm text-gray-600 mt-1">
+            目標達成をサポートします
+          </p>
         </div>
         <div className="flex gap-3">
           <Link href="/add-goal">
@@ -137,16 +114,6 @@ export default function Home() {
               設定
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-gray-500 border-gray-300 hover:bg-gray-50"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-          >
-            <LogOut className="h-3 w-3 mr-1" />
-            {logoutMutation.isPending ? "ログアウト中..." : "ログアウト"}
-          </Button>
         </div>
       </div>
 

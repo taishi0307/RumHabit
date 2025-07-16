@@ -128,25 +128,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
-  // Goals endpoints
-  app.get("/api/goals", requireAuth, async (req, res) => {
+  // Goals endpoints (認証なし)
+  app.get("/api/goals", async (req, res) => {
     try {
-      const user = req.user as any;
+      const userId = 1; // 固定ユーザーID
       const category = req.query.category as string;
       const goals = category 
-        ? await storage.getGoalsByCategory(user.id, category)
-        : await storage.getGoals(user.id);
+        ? await storage.getGoalsByCategory(userId, category)
+        : await storage.getGoals(userId);
       res.json(goals);
     } catch (error) {
       res.status(500).json({ message: "Failed to get goals" });
     }
   });
 
-  app.post("/api/goals", requireAuth, async (req, res) => {
+  app.post("/api/goals", async (req, res) => {
     try {
-      const user = req.user as any;
+      const userId = 1; // 固定ユーザーID
       const goalData = insertGoalSchema.parse(req.body);
-      const goal = await storage.createGoal(user.id, goalData);
+      const goal = await storage.createGoal(userId, goalData);
       res.json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -159,9 +159,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/goals/:id", async (req, res) => {
     try {
+      const userId = 1; // 固定ユーザーID
       const id = parseInt(req.params.id);
       const goalData = insertGoalSchema.parse(req.body);
-      const goal = await storage.updateGoal(id, goalData);
+      const goal = await storage.updateGoal(userId, id, goalData);
       res.json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -174,8 +175,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/goals/:id", async (req, res) => {
     try {
+      const userId = 1; // 固定ユーザーID
       const id = parseInt(req.params.id);
-      const success = await storage.deleteGoal(id);
+      const success = await storage.deleteGoal(userId, id);
       res.json({ success });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete goal" });
@@ -183,21 +185,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Workouts endpoints
-  app.get("/api/workouts", requireAuth, async (req, res) => {
+  app.get("/api/workouts", async (req, res) => {
     try {
-      const user = req.user as any;
-      const workouts = await storage.getWorkouts(user.id);
+      const userId = 1; // 固定ユーザーID
+      const workouts = await storage.getWorkouts(userId);
       res.json(workouts);
     } catch (error) {
       res.status(500).json({ message: "Failed to get workouts" });
     }
   });
 
-  app.post("/api/workouts", requireAuth, async (req, res) => {
+  app.post("/api/workouts", async (req, res) => {
     try {
-      const user = req.user as any;
+      const userId = 1; // 固定ユーザーID
       const workoutData = insertWorkoutSchema.parse(req.body);
-      const workout = await storage.createWorkout(user.id, workoutData);
+      const workout = await storage.createWorkout(userId, workoutData);
       res.json(workout);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -209,19 +211,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Habit data endpoints
-  app.get("/api/habit-data", requireAuth, async (req, res) => {
+  app.get("/api/habit-data", async (req, res) => {
     try {
-      const user = req.user as any;
+      const userId = 1; // 固定ユーザーID
       const goalId = req.query.goalId as string;
       const date = req.query.date as string;
       
       let habitData: HabitData[];
       if (goalId) {
-        habitData = await storage.getHabitDataByGoal(user.id, parseInt(goalId));
+        habitData = await storage.getHabitDataByGoal(userId, parseInt(goalId));
       } else if (date) {
-        habitData = await storage.getHabitDataByDate(user.id, date);
+        habitData = await storage.getHabitDataByDate(userId, date);
       } else {
-        habitData = await storage.getHabitData(user.id);
+        habitData = await storage.getHabitData(userId);
       }
       
       res.json(habitData);
@@ -230,11 +232,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/habit-data", requireAuth, async (req, res) => {
+  app.post("/api/habit-data", async (req, res) => {
     try {
-      const user = req.user as any;
+      const userId = 1; // 固定ユーザーID
       const habitDataInput = insertHabitDataSchema.parse(req.body);
-      const habitData = await storage.createOrUpdateHabitData(user.id, habitDataInput);
+      const habitData = await storage.createOrUpdateHabitData(userId, habitDataInput);
       res.json(habitData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -246,11 +248,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Statistics endpoint
-  app.get("/api/statistics", requireAuth, async (req, res) => {
+  app.get("/api/statistics", async (req, res) => {
     try {
-      const user = req.user as any;
-      const goals = await storage.getGoals(user.id);
-      const habitData = await storage.getHabitData(user.id);
+      const userId = 1; // 固定ユーザーID
+      const goals = await storage.getGoals(userId);
+      const habitData = await storage.getHabitData(userId);
       
       // Calculate statistics
       let streak = 0;
