@@ -10,6 +10,8 @@ import type { HabitData, Goal } from "@shared/schema";
 export default function RecordDetailPage() {
   const { goalId, recordId } = useParams<{ goalId: string; recordId: string }>();
 
+  console.log('RecordDetailPage params:', { goalId, recordId });
+
   const { data: goal, isLoading: goalLoading } = useQuery<Goal>({
     queryKey: [`/api/goals/${goalId}`],
   });
