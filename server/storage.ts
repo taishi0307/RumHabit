@@ -70,8 +70,8 @@ export class MemStorage implements IStorage {
         userId: 1, // Default user ID for development
         type: 'sleep',
         name: '睡眠目標',
-        targetValue: null,
-        unit: null,
+        targetValue: 8,
+        unit: '時間',
         category: 'sleep',
         targetDistance: null,
         targetTime: null,

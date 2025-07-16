@@ -211,7 +211,7 @@ export default function Home() {
                         {recentAchievement && (
                           <div className="text-xs text-gray-500">
                             最新: {
-                              goal.type === 'sleep-time' 
+                              goal.type === 'sleep-time' || (goal.type === 'sleep' && goal.unit === '時間')
                                 ? Number(recentAchievement.actualValue).toFixed(1)
                                 : goal.type === 'sleep-score'
                                 ? Math.round(Number(recentAchievement.actualValue))
