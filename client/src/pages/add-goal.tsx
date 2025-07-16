@@ -29,12 +29,15 @@ const goalTypes = [
     ]
   },
   {
-    id: "sleep-time",
+    id: "sleep",
     name: "睡眠",
     icon: Moon,
-    description: "睡眠時間目標を設定",
-    unit: "時間",
-    category: "sleep"
+    description: "睡眠目標を設定",
+    category: "sleep",
+    subtypes: [
+      { id: "sleep-time", name: "睡眠時間", unit: "時間" },
+      { id: "sleep-score", name: "睡眠スコア", unit: "点" }
+    ]
   }
 ];
 
@@ -159,11 +162,13 @@ export default function AddGoalPage() {
         </Card>
       )}
 
-      {/* Subtype Selection for Running */}
+      {/* Subtype Selection */}
       {selectedType && !selectedSubtype && goalTypes.find(t => t.id === selectedType)?.subtypes && (
         <Card>
           <CardHeader>
-            <CardTitle>ランニング目標の種類を選択</CardTitle>
+            <CardTitle>
+              {selectedType === "workout" ? "ランニング目標の種類を選択" : "睡眠目標の種類を選択"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
