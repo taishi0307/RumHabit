@@ -109,12 +109,12 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get calendar data for recent 30 days (7x5 grid = 35 days)
+                  // Get calendar data for recent 35 days (7x5 grid = 35 days)
                   const today = new Date();
                   today.setHours(23, 59, 59, 999); // Set to end of today
                   
                   const startDate = new Date(today);
-                  startDate.setDate(today.getDate() - 29); // 30 days back
+                  startDate.setDate(today.getDate() - 34); // 35 days back
                   startDate.setHours(0, 0, 0, 0); // Set to start of day
                   
                   // Find the start of the week for the grid
