@@ -114,12 +114,13 @@ Cost optimization: Use free tier only - no paid server costs.
 - **Service Worker**: Streamlined caching for smaller memory footprint
 - **Fallback Storage**: Auto-switch to in-memory storage if database unavailable
 - **Resource Efficiency**: Configured for 512MB memory limit and reduced resource usage
+- **Cache Problem Resolution**: Fixed reload blank screen issue by disabling service worker in development, adding cache control headers, and optimizing React Query settings
 
 ### Fitbit OAuth認証の実装成功 (July 2025)
 - **OAuth認証フロー**: 完全に動作する認証システムを実装
 - **実際のデータ取得**: Fitbitアカウントから実際のワークアウトデータの取得に成功
-- **データ検証**: 距離2.08km、心拍数160bpm、時間16分23秒、カロリー140kcalの実測データを確認
-- **デバッグ機能**: 実際のFitbitデータとサンプルデータを区別する機能を追加
+- **データ精度向上**: 重複データ除去、時間変換精度向上、距離データ精度向上を実装
+- **実測データ確認**: 3件の実際のFitbitワークアウトデータを確認（2025年6月22日×2件、2025年7月15日×1件）
 - **認証状態の永続化**: アクセストークンの適切な保存と管理
 - **詳細ログ**: プロファイル確認、複数APIエンドポイントの試行、エラー処理の改善
 
