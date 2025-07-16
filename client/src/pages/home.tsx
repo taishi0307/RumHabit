@@ -126,13 +126,7 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">習慣トラッカー</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            目標達成をサポートします
-          </p>
-        </div>
+      <div className="flex justify-end items-center mb-6">
         <div className="flex gap-3">
           <Link href="/add-goal">
             <Button variant="outline" size="sm">
