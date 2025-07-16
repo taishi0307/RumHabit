@@ -1,11 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { Target, Settings, Plus, Activity, Moon, Droplet } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Target, Settings, Plus, Activity, Moon, Droplet, LogOut } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Goal, HabitData } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Statistics {
   streak: number;
@@ -14,6 +17,10 @@ interface Statistics {
 }
 
 export default function Home() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: goals = [] } = useQuery<Goal[]>({
     queryKey: ["/api/goals"],
   });
@@ -24,6 +31,31 @@ export default function Home() {
 
   const { data: statistics } = useQuery<Statistics>({
     queryKey: ["/api/statistics"],
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest({
+        url: "/api/auth/logout",
+        method: "POST",
+      });
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      toast({
+        title: "ログアウトしました",
+        description: "またのご利用をお待ちしております",
+      });
+      // ページリロードでログイン画面に戻る
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "ログアウトエラー",
+        description: error.message || "ログアウトに失敗しました",
+        variant: "destructive",
+      });
+    },
   });
 
   // Group goals by category
@@ -93,17 +125,37 @@ export default function Home() {
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <Link href="/add-goal">
-          <Button variant="outline" size="sm">
-            <Plus className="h-4 w-4" />
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">習慣トラッカー</h1>
+          {user && (
+            <p className="text-sm text-gray-600 mt-1">
+              こんにちは、{user.firstName || user.email}さん
+            </p>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Link href="/add-goal">
+            <Button variant="outline" size="sm">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/settings">
+            <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
+              <Settings className="h-3 w-3 mr-1" />
+              設定
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-gray-500 border-gray-300 hover:bg-gray-50"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+          >
+            <LogOut className="h-3 w-3 mr-1" />
+            {logoutMutation.isPending ? "ログアウト中..." : "ログアウト"}
           </Button>
-        </Link>
-        <Link href="/settings">
-          <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
-            <Settings className="h-3 w-3 mr-1" />
-            設定
-          </Button>
-        </Link>
+        </div>
       </div>
 
 
