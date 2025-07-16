@@ -10,7 +10,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import type { Goal, HabitData } from "@shared/schema";
 
 export default function GoalDetailPage() {
-  const [, params] = useRoute("/goals/:id");
+  const [, params] = useRoute("/goal/:id");
   const goalId = params?.id ? parseInt(params.id) : null;
 
   const { data: goals = [] } = useQuery<Goal[]>({
