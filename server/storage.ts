@@ -5,22 +5,22 @@ import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Goals
-  getGoals(): Promise<Goal[]>;
-  getGoalsByCategory(category: string): Promise<Goal[]>;
-  createGoal(goal: InsertGoal): Promise<Goal>;
-  updateGoal(id: number, goal: InsertGoal): Promise<Goal>;
-  deleteGoal(id: number): Promise<boolean>;
+  getGoals(userId: number): Promise<Goal[]>;
+  getGoalsByCategory(userId: number, category: string): Promise<Goal[]>;
+  createGoal(userId: number, goal: InsertGoal): Promise<Goal>;
+  updateGoal(userId: number, id: number, goal: InsertGoal): Promise<Goal>;
+  deleteGoal(userId: number, id: number): Promise<boolean>;
   
   // Workouts
-  getWorkouts(): Promise<Workout[]>;
-  getWorkoutsByDateRange(startDate: string, endDate: string): Promise<Workout[]>;
-  createWorkout(workout: InsertWorkout): Promise<Workout>;
+  getWorkouts(userId: number): Promise<Workout[]>;
+  getWorkoutsByDateRange(userId: number, startDate: string, endDate: string): Promise<Workout[]>;
+  createWorkout(userId: number, workout: InsertWorkout): Promise<Workout>;
   
   // Habit Data
-  getHabitData(): Promise<HabitData[]>;
-  getHabitDataByGoal(goalId: number): Promise<HabitData[]>;
-  getHabitDataByDate(date: string): Promise<HabitData[]>;
-  createOrUpdateHabitData(habitData: InsertHabitData): Promise<HabitData>;
+  getHabitData(userId: number): Promise<HabitData[]>;
+  getHabitDataByGoal(userId: number, goalId: number): Promise<HabitData[]>;
+  getHabitDataByDate(userId: number, date: string): Promise<HabitData[]>;
+  createOrUpdateHabitData(userId: number, habitData: InsertHabitData): Promise<HabitData>;
 }
 
 export class MemStorage implements IStorage {
@@ -50,6 +50,7 @@ export class MemStorage implements IStorage {
     const defaultGoals: Goal[] = [
       {
         id: 1,
+        userId: 1, // Default user ID for development
         type: 'workout',
         name: 'ランニング目標',
         targetValue: null,
@@ -66,6 +67,7 @@ export class MemStorage implements IStorage {
       },
       {
         id: 2,
+        userId: 1, // Default user ID for development
         type: 'sleep',
         name: '睡眠目標',
         targetValue: null,
@@ -91,32 +93,34 @@ export class MemStorage implements IStorage {
   private initializeSampleData() {
     // Sample workouts for July 2025
     const sampleWorkouts: Workout[] = [
-      { id: 1, date: "2025-07-14", time: "07:30:00", distance: 5.2, heartRate: 155, duration: 1800, calories: 320, createdAt: new Date() },
-      { id: 2, date: "2025-07-13", time: "18:45:00", distance: 3.8, heartRate: 142, duration: 1200, calories: 280, createdAt: new Date() },
-      { id: 3, date: "2025-07-12", time: "06:15:00", distance: 6.1, heartRate: 160, duration: 2100, calories: 410, createdAt: new Date() },
-      { id: 4, date: "2025-07-11", time: "19:30:00", distance: 4.5, heartRate: 148, duration: 1500, calories: 295, createdAt: new Date() },
-      { id: 5, date: "2025-07-10", time: "07:00:00", distance: 5.8, heartRate: 165, duration: 1950, calories: 385, createdAt: new Date() },
-      { id: 6, date: "2025-07-09", time: "17:20:00", distance: 3.2, heartRate: 138, duration: 1080, calories: 250, createdAt: new Date() },
-      { id: 7, date: "2025-07-08", time: "08:45:00", distance: 5.5, heartRate: 152, duration: 1740, calories: 340, createdAt: new Date() },
-      { id: 8, date: "2025-07-07", time: "18:15:00", distance: 4.2, heartRate: 145, duration: 1350, calories: 275, createdAt: new Date() },
-      { id: 9, date: "2025-07-06", time: "07:45:00", distance: 6.3, heartRate: 158, duration: 2040, calories: 420, createdAt: new Date() },
-      { id: 10, date: "2025-07-05", time: "19:00:00", distance: 3.9, heartRate: 140, duration: 1260, calories: 265, createdAt: new Date() },
-      { id: 11, date: "2025-07-04", time: "06:30:00", distance: 5.1, heartRate: 153, duration: 1680, calories: 315, createdAt: new Date() },
-      { id: 12, date: "2025-07-03", time: "17:45:00", distance: 4.8, heartRate: 149, duration: 1620, calories: 305, createdAt: new Date() },
-      { id: 13, date: "2025-07-02", time: "08:15:00", distance: 5.9, heartRate: 162, duration: 1980, calories: 395, createdAt: new Date() },
-      { id: 14, date: "2025-07-01", time: "18:30:00", distance: 4.0, heartRate: 143, duration: 1200, calories: 270, createdAt: new Date() },
+      { id: 1, userId: 1, date: "2025-07-15", time: "00:12:00", distance: 2.07, heartRate: 160, duration: 828, calories: 139, createdAt: new Date() },
+      { id: 2, userId: 1, date: "2025-07-14", time: "07:30:00", distance: 5.2, heartRate: 155, duration: 1800, calories: 320, createdAt: new Date() },
+      { id: 3, userId: 1, date: "2025-07-13", time: "18:45:00", distance: 3.8, heartRate: 142, duration: 1200, calories: 280, createdAt: new Date() },
+      { id: 4, userId: 1, date: "2025-07-12", time: "06:15:00", distance: 6.1, heartRate: 160, duration: 2100, calories: 410, createdAt: new Date() },
+      { id: 5, userId: 1, date: "2025-07-11", time: "19:30:00", distance: 4.5, heartRate: 148, duration: 1500, calories: 295, createdAt: new Date() },
+      { id: 6, userId: 1, date: "2025-07-10", time: "07:00:00", distance: 5.8, heartRate: 165, duration: 1950, calories: 385, createdAt: new Date() },
+      { id: 7, userId: 1, date: "2025-07-09", time: "17:20:00", distance: 3.2, heartRate: 138, duration: 1080, calories: 250, createdAt: new Date() },
+      { id: 8, userId: 1, date: "2025-07-08", time: "08:45:00", distance: 5.5, heartRate: 152, duration: 1740, calories: 340, createdAt: new Date() },
+      { id: 9, userId: 1, date: "2025-07-07", time: "18:15:00", distance: 4.2, heartRate: 145, duration: 1350, calories: 275, createdAt: new Date() },
+      { id: 10, userId: 1, date: "2025-07-06", time: "07:45:00", distance: 6.3, heartRate: 158, duration: 2040, calories: 420, createdAt: new Date() },
+      { id: 11, userId: 1, date: "2025-07-05", time: "19:00:00", distance: 3.9, heartRate: 140, duration: 1260, calories: 265, createdAt: new Date() },
+      { id: 12, userId: 1, date: "2025-07-04", time: "06:30:00", distance: 5.1, heartRate: 153, duration: 1680, calories: 315, createdAt: new Date() },
+      { id: 13, userId: 1, date: "2025-07-03", time: "17:45:00", distance: 4.8, heartRate: 149, duration: 1620, calories: 305, createdAt: new Date() },
+      { id: 14, userId: 1, date: "2025-07-02", time: "08:15:00", distance: 5.9, heartRate: 162, duration: 1980, calories: 395, createdAt: new Date() },
+      { id: 15, userId: 1, date: "2025-07-01", time: "18:30:00", distance: 4.0, heartRate: 143, duration: 1200, calories: 270, createdAt: new Date() },
     ];
 
     sampleWorkouts.forEach(workout => {
       this.workouts.set(workout.id, workout);
     });
-    this.currentWorkoutId = 15;
+    this.currentWorkoutId = 16;
 
     // Generate habit data only for the default goal (id: 1)
     sampleWorkouts.forEach(workout => {
       // Only create habit data for the default workout goal (id: 1)
       const distanceHabit: HabitData = {
         id: this.currentHabitDataId++,
+        userId: 1,
         date: workout.date,
         goalId: 1,
         achieved: workout.distance >= 5.0,
@@ -133,6 +137,7 @@ export class MemStorage implements IStorage {
       const sleepTime = 6.5 + Math.random() * 3; // 6.5 to 9.5 hours
       const sleepTimeHabit: HabitData = {
         id: this.currentHabitDataId++,
+        userId: 1,
         date: date,
         goalId: 2,
         achieved: sleepTime >= 8,
@@ -143,17 +148,20 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async getGoals(): Promise<Goal[]> {
-    return Array.from(this.goals.values());
+  async getGoals(userId: number): Promise<Goal[]> {
+    return Array.from(this.goals.values()).filter(goal => goal.userId === userId);
   }
 
-  async getGoalsByCategory(category: string): Promise<Goal[]> {
-    return Array.from(this.goals.values()).filter(goal => goal.category === category);
+  async getGoalsByCategory(userId: number, category: string): Promise<Goal[]> {
+    return Array.from(this.goals.values()).filter(goal => 
+      goal.userId === userId && goal.category === category
+    );
   }
 
-  async createGoal(goal: InsertGoal): Promise<Goal> {
+  async createGoal(userId: number, goal: InsertGoal): Promise<Goal> {
     const newGoal: Goal = {
       id: this.currentGoalId++,
+      userId,
       ...goal,
       targetValue: goal.targetValue || null,
       unit: goal.unit || null,
@@ -170,39 +178,48 @@ export class MemStorage implements IStorage {
     return newGoal;
   }
 
-  async updateGoal(id: number, goal: InsertGoal): Promise<Goal> {
+  async updateGoal(userId: number, id: number, goal: InsertGoal): Promise<Goal> {
     const existing = this.goals.get(id);
-    if (!existing) {
+    if (!existing || existing.userId !== userId) {
       throw new Error(`Goal with id ${id} not found`);
     }
     
     const updated: Goal = {
       ...existing,
       ...goal,
+      id: existing.id,
+      userId: existing.userId,
     };
     this.goals.set(id, updated);
     return updated;
   }
 
-  async deleteGoal(id: number): Promise<boolean> {
+  async deleteGoal(userId: number, id: number): Promise<boolean> {
+    const existing = this.goals.get(id);
+    if (!existing || existing.userId !== userId) {
+      return false;
+    }
     return this.goals.delete(id);
   }
 
-  async getWorkouts(): Promise<Workout[]> {
-    return Array.from(this.workouts.values()).sort((a, b) => 
-      new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime()
-    );
+  async getWorkouts(userId: number): Promise<Workout[]> {
+    return Array.from(this.workouts.values())
+      .filter(workout => workout.userId === userId)
+      .sort((a, b) => 
+        new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime()
+      );
   }
 
-  async getWorkoutsByDateRange(startDate: string, endDate: string): Promise<Workout[]> {
+  async getWorkoutsByDateRange(userId: number, startDate: string, endDate: string): Promise<Workout[]> {
     return Array.from(this.workouts.values()).filter(workout => 
-      workout.date >= startDate && workout.date <= endDate
+      workout.userId === userId && workout.date >= startDate && workout.date <= endDate
     );
   }
 
-  async createWorkout(workout: InsertWorkout): Promise<Workout> {
+  async createWorkout(userId: number, workout: InsertWorkout): Promise<Workout> {
     const newWorkout: Workout = {
       id: this.currentWorkoutId++,
+      userId,
       ...workout,
       createdAt: new Date(),
     };
@@ -210,21 +227,21 @@ export class MemStorage implements IStorage {
     return newWorkout;
   }
 
-  async getHabitData(): Promise<HabitData[]> {
-    return this.habitDataList;
+  async getHabitData(userId: number): Promise<HabitData[]> {
+    return this.habitDataList.filter(data => data.userId === userId);
   }
 
-  async getHabitDataByGoal(goalId: number): Promise<HabitData[]> {
-    return this.habitDataList.filter(data => data.goalId === goalId);
+  async getHabitDataByGoal(userId: number, goalId: number): Promise<HabitData[]> {
+    return this.habitDataList.filter(data => data.userId === userId && data.goalId === goalId);
   }
 
-  async getHabitDataByDate(date: string): Promise<HabitData[]> {
-    return this.habitDataList.filter(data => data.date === date);
+  async getHabitDataByDate(userId: number, date: string): Promise<HabitData[]> {
+    return this.habitDataList.filter(data => data.userId === userId && data.date === date);
   }
 
-  async createOrUpdateHabitData(habitData: InsertHabitData): Promise<HabitData> {
+  async createOrUpdateHabitData(userId: number, habitData: InsertHabitData): Promise<HabitData> {
     const existing = this.habitDataList.find(data => 
-      data.date === habitData.date && data.goalId === habitData.goalId
+      data.userId === userId && data.date === habitData.date && data.goalId === habitData.goalId
     );
 
     if (existing) {
@@ -238,6 +255,7 @@ export class MemStorage implements IStorage {
     } else {
       const newHabitData: HabitData = {
         id: this.currentHabitDataId++,
+        userId,
         ...habitData,
         achieved: habitData.achieved ?? false,
         actualValue: habitData.actualValue ?? null,
@@ -250,60 +268,77 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getGoals(): Promise<Goal[]> {
-    return await db.select().from(goals);
+  async getGoals(userId: number): Promise<Goal[]> {
+    return await db.select().from(goals).where(eq(goals.userId, userId));
   }
 
-  async getGoalsByCategory(category: string): Promise<Goal[]> {
-    return await db.select().from(goals).where(eq(goals.category, category));
+  async getGoalsByCategory(userId: number, category: string): Promise<Goal[]> {
+    return await db.select().from(goals).where(and(
+      eq(goals.userId, userId),
+      eq(goals.category, category)
+    ));
   }
 
-  async createGoal(goal: InsertGoal): Promise<Goal> {
-    const [newGoal] = await db.insert(goals).values(goal).returning();
+  async createGoal(userId: number, goal: InsertGoal): Promise<Goal> {
+    const [newGoal] = await db.insert(goals).values({ ...goal, userId }).returning();
     return newGoal;
   }
 
-  async updateGoal(id: number, goal: InsertGoal): Promise<Goal> {
-    const [updatedGoal] = await db.update(goals).set(goal).where(eq(goals.id, id)).returning();
+  async updateGoal(userId: number, id: number, goal: InsertGoal): Promise<Goal> {
+    const [updatedGoal] = await db.update(goals)
+      .set(goal)
+      .where(and(eq(goals.id, id), eq(goals.userId, userId)))
+      .returning();
     return updatedGoal;
   }
 
-  async deleteGoal(id: number): Promise<boolean> {
-    const result = await db.delete(goals).where(eq(goals.id, id));
+  async deleteGoal(userId: number, id: number): Promise<boolean> {
+    const result = await db.delete(goals).where(and(
+      eq(goals.id, id),
+      eq(goals.userId, userId)
+    ));
     return (result.rowCount || 0) > 0;
   }
 
-  async getWorkouts(): Promise<Workout[]> {
-    return await db.select().from(workouts);
+  async getWorkouts(userId: number): Promise<Workout[]> {
+    return await db.select().from(workouts).where(eq(workouts.userId, userId));
   }
 
-  async getWorkoutsByDateRange(startDate: string, endDate: string): Promise<Workout[]> {
-    return await db.select().from(workouts).where(
+  async getWorkoutsByDateRange(userId: number, startDate: string, endDate: string): Promise<Workout[]> {
+    return await db.select().from(workouts).where(and(
+      eq(workouts.userId, userId),
       eq(workouts.date, startDate) // Note: This should be a range query, but simplified for now
-    );
+    ));
   }
 
-  async createWorkout(workout: InsertWorkout): Promise<Workout> {
-    const [newWorkout] = await db.insert(workouts).values(workout).returning();
+  async createWorkout(userId: number, workout: InsertWorkout): Promise<Workout> {
+    const [newWorkout] = await db.insert(workouts).values({ ...workout, userId }).returning();
     return newWorkout;
   }
 
-  async getHabitData(): Promise<HabitData[]> {
-    return await db.select().from(habitData);
+  async getHabitData(userId: number): Promise<HabitData[]> {
+    return await db.select().from(habitData).where(eq(habitData.userId, userId));
   }
 
-  async getHabitDataByGoal(goalId: number): Promise<HabitData[]> {
-    return await db.select().from(habitData).where(eq(habitData.goalId, goalId));
+  async getHabitDataByGoal(userId: number, goalId: number): Promise<HabitData[]> {
+    return await db.select().from(habitData).where(and(
+      eq(habitData.userId, userId),
+      eq(habitData.goalId, goalId)
+    ));
   }
 
-  async getHabitDataByDate(date: string): Promise<HabitData[]> {
-    return await db.select().from(habitData).where(eq(habitData.date, date));
+  async getHabitDataByDate(userId: number, date: string): Promise<HabitData[]> {
+    return await db.select().from(habitData).where(and(
+      eq(habitData.userId, userId),
+      eq(habitData.date, date)
+    ));
   }
 
-  async createOrUpdateHabitData(habitDataInput: InsertHabitData): Promise<HabitData> {
+  async createOrUpdateHabitData(userId: number, habitDataInput: InsertHabitData): Promise<HabitData> {
     // Check if habit data exists for this goal and date
     const existing = await db.select().from(habitData)
       .where(and(
+        eq(habitData.userId, userId),
         eq(habitData.goalId, habitDataInput.goalId),
         eq(habitData.date, habitDataInput.date)
       ))
@@ -318,7 +353,7 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } else {
       // Create new record
-      const [newHabitData] = await db.insert(habitData).values(habitDataInput).returning();
+      const [newHabitData] = await db.insert(habitData).values({ ...habitDataInput, userId }).returning();
       return newHabitData;
     }
   }
