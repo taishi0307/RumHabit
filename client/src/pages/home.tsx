@@ -200,7 +200,13 @@ export default function Home() {
 
                         {recentAchievement && (
                           <div className="text-xs text-gray-500">
-                            最新: {recentAchievement.actualValue} {goal.unit} ({recentAchievement.date})
+                            最新: {
+                              goal.type === 'sleep-time' 
+                                ? parseFloat(recentAchievement.actualValue).toFixed(1)
+                                : goal.type === 'sleep-score'
+                                ? Math.round(parseFloat(recentAchievement.actualValue))
+                                : recentAchievement.actualValue
+                            } {goal.unit} ({recentAchievement.date})
                             <Badge 
                               variant={recentAchievement.achieved ? "default" : "secondary"}
                               className="ml-2"
