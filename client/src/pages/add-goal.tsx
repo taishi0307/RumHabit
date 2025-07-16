@@ -16,12 +16,17 @@ import { useToast } from "@/hooks/use-toast";
 
 const goalTypes = [
   {
-    id: "workout-distance",
+    id: "workout",
     name: "ランニング",
     icon: Play,
-    description: "距離目標を設定",
-    unit: "km",
-    category: "workout"
+    description: "ランニング目標を設定",
+    category: "workout",
+    subtypes: [
+      { id: "workout-distance", name: "距離", unit: "km" },
+      { id: "workout-time", name: "時間", unit: "分" },
+      { id: "workout-heart-rate", name: "平均心拍数", unit: "bpm" },
+      { id: "workout-calories", name: "消費エネルギー", unit: "kcal" }
+    ]
   },
   {
     id: "sleep-time",
@@ -36,6 +41,7 @@ const goalTypes = [
 export default function AddGoalPage() {
   const [, navigate] = useLocation();
   const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedSubtype, setSelectedSubtype] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -80,10 +86,30 @@ export default function AddGoalPage() {
     const goalType = goalTypes.find(t => t.id === typeId);
     if (goalType) {
       setSelectedType(typeId);
-      form.setValue("type", typeId);
-      form.setValue("name", goalType.name + "目標");
-      form.setValue("unit", goalType.unit);
-      form.setValue("category", goalType.category);
+      if (goalType.subtypes) {
+        // Has subtypes, don't set form values yet
+        setSelectedSubtype("");
+      } else {
+        // No subtypes, set form values directly
+        form.setValue("type", typeId);
+        form.setValue("name", goalType.name + "目標");
+        form.setValue("unit", goalType.unit);
+        form.setValue("category", goalType.category);
+      }
+    }
+  };
+
+  const handleSubtypeSelect = (subtypeId: string) => {
+    const goalType = goalTypes.find(t => t.id === selectedType);
+    if (goalType && goalType.subtypes) {
+      const subtype = goalType.subtypes.find(s => s.id === subtypeId);
+      if (subtype) {
+        setSelectedSubtype(subtypeId);
+        form.setValue("type", subtypeId);
+        form.setValue("name", subtype.name + "目標");
+        form.setValue("unit", subtype.unit);
+        form.setValue("category", goalType.category);
+      }
     }
   };
 
@@ -133,8 +159,42 @@ export default function AddGoalPage() {
         </Card>
       )}
 
+      {/* Subtype Selection for Running */}
+      {selectedType && !selectedSubtype && goalTypes.find(t => t.id === selectedType)?.subtypes && (
+        <Card>
+          <CardHeader>
+            <CardTitle>ランニング目標の種類を選択</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {goalTypes.find(t => t.id === selectedType)?.subtypes?.map((subtype) => (
+                <Button
+                  key={subtype.id}
+                  variant="outline"
+                  className="h-20 flex-col gap-2 hover:bg-gray-50"
+                  onClick={() => handleSubtypeSelect(subtype.id)}
+                >
+                  <div className="text-center">
+                    <div className="font-semibold">{subtype.name}</div>
+                    <div className="text-xs text-gray-600">単位: {subtype.unit}</div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+            <div className="flex justify-start mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedType("")}
+              >
+                戻る
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Goal Configuration */}
-      {selectedType && (
+      {(selectedType && !goalTypes.find(t => t.id === selectedType)?.subtypes) || selectedSubtype ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -142,10 +202,19 @@ export default function AddGoalPage() {
                 const selectedGoalType = goalTypes.find(t => t.id === selectedType);
                 if (selectedGoalType) {
                   const Icon = selectedGoalType.icon;
+                  let title = selectedGoalType.name + "目標の設定";
+                  
+                  if (selectedSubtype && selectedGoalType.subtypes) {
+                    const subtype = selectedGoalType.subtypes.find(s => s.id === selectedSubtype);
+                    if (subtype) {
+                      title = subtype.name + "目標の設定";
+                    }
+                  }
+                  
                   return (
                     <>
                       <Icon className="h-5 w-5" />
-                      {selectedGoalType.name}目標の設定
+                      {title}
                     </>
                   );
                 }
@@ -193,7 +262,13 @@ export default function AddGoalPage() {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setSelectedType("")}
+                    onClick={() => {
+                      if (selectedSubtype) {
+                        setSelectedSubtype("");
+                      } else {
+                        setSelectedType("");
+                      }
+                    }}
                   >
                     戻る
                   </Button>
@@ -208,7 +283,7 @@ export default function AddGoalPage() {
             </Form>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 }
