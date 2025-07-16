@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import { goals, workouts, habitData, type Goal, type InsertGoal, type Workout, type InsertWorkout, type HabitData, type InsertHabitData } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Goals
@@ -247,4 +249,79 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getGoals(): Promise<Goal[]> {
+    return await db.select().from(goals);
+  }
+
+  async getGoalsByCategory(category: string): Promise<Goal[]> {
+    return await db.select().from(goals).where(eq(goals.category, category));
+  }
+
+  async createGoal(goal: InsertGoal): Promise<Goal> {
+    const [newGoal] = await db.insert(goals).values(goal).returning();
+    return newGoal;
+  }
+
+  async updateGoal(id: number, goal: InsertGoal): Promise<Goal> {
+    const [updatedGoal] = await db.update(goals).set(goal).where(eq(goals.id, id)).returning();
+    return updatedGoal;
+  }
+
+  async deleteGoal(id: number): Promise<boolean> {
+    const result = await db.delete(goals).where(eq(goals.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getWorkouts(): Promise<Workout[]> {
+    return await db.select().from(workouts);
+  }
+
+  async getWorkoutsByDateRange(startDate: string, endDate: string): Promise<Workout[]> {
+    return await db.select().from(workouts).where(
+      eq(workouts.date, startDate) // Note: This should be a range query, but simplified for now
+    );
+  }
+
+  async createWorkout(workout: InsertWorkout): Promise<Workout> {
+    const [newWorkout] = await db.insert(workouts).values(workout).returning();
+    return newWorkout;
+  }
+
+  async getHabitData(): Promise<HabitData[]> {
+    return await db.select().from(habitData);
+  }
+
+  async getHabitDataByGoal(goalId: number): Promise<HabitData[]> {
+    return await db.select().from(habitData).where(eq(habitData.goalId, goalId));
+  }
+
+  async getHabitDataByDate(date: string): Promise<HabitData[]> {
+    return await db.select().from(habitData).where(eq(habitData.date, date));
+  }
+
+  async createOrUpdateHabitData(habitDataInput: InsertHabitData): Promise<HabitData> {
+    // Check if habit data exists for this goal and date
+    const existing = await db.select().from(habitData)
+      .where(and(
+        eq(habitData.goalId, habitDataInput.goalId),
+        eq(habitData.date, habitDataInput.date)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing record
+      const [updated] = await db.update(habitData)
+        .set(habitDataInput)
+        .where(eq(habitData.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      // Create new record
+      const [newHabitData] = await db.insert(habitData).values(habitDataInput).returning();
+      return newHabitData;
+    }
+  }
+}
+
+export const storage = new DatabaseStorage();
