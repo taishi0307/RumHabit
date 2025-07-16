@@ -67,9 +67,31 @@
     border-bottom: none !important;
   }
 
+  /* PWA specific fixes to remove top border/line */
+  body {
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    outline: none !important;
+  }
+
   /* Remove any default browser styling that might cause lines */
   * {
     box-sizing: border-box;
+  }
+
+  /* Remove borders from all elements that might cause the top line */
+  div, section, main, header, nav {
+    border-top: none !important;
+  }
+
+  /* Specific fix for PWA display mode */
+  @media (display-mode: standalone) {
+    body {
+      border-top: none !important;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
   }
 
   /* Only apply borders to components that need them */
