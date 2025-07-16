@@ -86,10 +86,7 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
 
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: InsertGoal) => {
-      const response = await apiRequest("/api/goals", {
-        method: "POST",
-        body: JSON.stringify(goalData)
-      });
+      const response = await apiRequest("POST", "/api/goals", goalData);
       return response.json();
     },
     onSuccess: () => {
