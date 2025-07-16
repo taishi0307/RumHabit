@@ -159,23 +159,30 @@ export class MemStorage implements IStorage {
   }
 
   async createGoal(userId: number, goal: InsertGoal): Promise<Goal> {
-    const newGoal: Goal = {
-      id: this.currentGoalId++,
-      userId,
-      ...goal,
-      targetValue: goal.targetValue || null,
-      unit: goal.unit || null,
-      targetDistance: goal.targetDistance || null,
-      targetTime: goal.targetTime || null,
-      targetHeartRate: goal.targetHeartRate || null,
-      targetCalories: goal.targetCalories || null,
-      targetSleepTime: goal.targetSleepTime || null,
-      targetSleepScore: goal.targetSleepScore || null,
-      isActive: goal.isActive ?? true,
-      createdAt: new Date(),
-    };
-    this.goals.set(newGoal.id, newGoal);
-    return newGoal;
+    try {
+      console.log('MemStorage.createGoal called with:', { userId, goal });
+      const newGoal: Goal = {
+        id: this.currentGoalId++,
+        userId,
+        ...goal,
+        targetValue: goal.targetValue || null,
+        unit: goal.unit || null,
+        targetDistance: goal.targetDistance || null,
+        targetTime: goal.targetTime || null,
+        targetHeartRate: goal.targetHeartRate || null,
+        targetCalories: goal.targetCalories || null,
+        targetSleepTime: goal.targetSleepTime || null,
+        targetSleepScore: goal.targetSleepScore || null,
+        isActive: goal.isActive ?? true,
+        createdAt: new Date(),
+      };
+      this.goals.set(newGoal.id, newGoal);
+      console.log('MemStorage.createGoal success:', newGoal);
+      return newGoal;
+    } catch (error) {
+      console.error('MemStorage.createGoal error:', error);
+      throw error;
+    }
   }
 
   async updateGoal(userId: number, id: number, goal: InsertGoal): Promise<Goal> {
@@ -280,8 +287,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createGoal(userId: number, goal: InsertGoal): Promise<Goal> {
-    const [newGoal] = await db.insert(goals).values({ ...goal, userId }).returning();
-    return newGoal;
+    try {
+      console.log('DatabaseStorage.createGoal called with:', { userId, goal });
+      const [newGoal] = await db.insert(goals).values({ ...goal, userId }).returning();
+      console.log('DatabaseStorage.createGoal success:', newGoal);
+      return newGoal;
+    } catch (error) {
+      console.error('DatabaseStorage.createGoal error:', error);
+      throw error;
+    }
   }
 
   async updateGoal(userId: number, id: number, goal: InsertGoal): Promise<Goal> {
@@ -360,7 +374,8 @@ export class DatabaseStorage implements IStorage {
 }
 
 // 無料プランでは環境変数で切り替え可能
-const useInMemoryStorage = process.env.NODE_ENV === 'development' || !process.env.DATABASE_URL;
+// 本番環境でも一時的にMemStorageを使用してテスト
+const useInMemoryStorage = true; // process.env.NODE_ENV === 'development' || !process.env.DATABASE_URL;
 
 console.log('Storage configuration:', {
   NODE_ENV: process.env.NODE_ENV,
