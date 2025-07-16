@@ -14,6 +14,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
   
+  console.log(`API Request: ${method} ${url}`, data);
+  
   const res = await fetch(url, {
     method,
     headers: {
@@ -24,6 +26,8 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  console.log(`API Response: ${res.status} ${res.statusText}`);
+  
   await throwIfResNotOk(res);
   return res;
 }

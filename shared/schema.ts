@@ -91,7 +91,11 @@ export const insertGoalSchema = createInsertSchema(goals).omit({
   userId: true,
   createdAt: true,
 }).extend({
+  name: z.string().min(1, "目標名は必須です"),
+  type: z.string().min(1, "目標タイプは必須です"),
+  category: z.string().min(1, "カテゴリは必須です"),
   targetValue: z.number().nullable().optional(),
+  unit: z.string().optional(),
   targetDistance: z.number().nullable().optional(),
   targetTime: z.number().nullable().optional(),
   targetHeartRate: z.number().nullable().optional(),
