@@ -163,7 +163,7 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-gray-50 min-h-screen">
+    <div className="max-w-2xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link href={goalType ? "/add-goal" : "/"}>

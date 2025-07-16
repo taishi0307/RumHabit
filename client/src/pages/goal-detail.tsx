@@ -26,7 +26,7 @@ export default function GoalDetailPage() {
 
   if (!goal) {
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
         <Card>
           <CardContent className="text-center py-12">
             <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -89,7 +89,7 @@ export default function GoalDetailPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
+    <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex items-center justify-between">
