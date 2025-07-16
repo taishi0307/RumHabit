@@ -1,23 +1,28 @@
 {
   "name": "習慣トラッカー",
   "short_name": "習慣トラッカー",
-  "description": "日本語の習慣追跡アプリ",
+  "description": "目標達成をサポートする習慣トラッキングアプリ",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
-  "theme_color": "#3b82f6",
+  "theme_color": "#f9fafb",
   "orientation": "portrait",
-  "prefer_related_applications": false,
+  "scope": "/",
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["health", "lifestyle", "productivity"],
+  "lang": "ja",
+  "dir": "ltr"
 }
