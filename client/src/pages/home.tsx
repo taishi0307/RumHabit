@@ -126,13 +126,15 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
       {/* Header */}
-      <div className="flex justify-end items-center mb-6">
-        <div className="flex gap-3">
+      <div className="flex justify-between items-center mb-6">
+        <div>
           <Link href="/add-goal">
             <Button variant="outline" size="sm">
               <Plus className="h-4 w-4" />
             </Button>
           </Link>
+        </div>
+        <div>
           <Link href="/settings">
             <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
               <Settings className="h-3 w-3 mr-1" />
