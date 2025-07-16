@@ -13,12 +13,14 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+  const token = localStorage.getItem("auth_token");
   
   const res = await fetch(url, {
     method,
     headers: {
       ...(data ? { "Content-Type": "application/json" } : {}),
       ...(isDev ? { "Cache-Control": "no-cache" } : {}), // 開発環境では no-cache
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
@@ -34,8 +36,15 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Get auth token from localStorage
+    const token = localStorage.getItem("auth_token");
+    
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

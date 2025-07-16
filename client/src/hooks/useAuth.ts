@@ -6,6 +6,7 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5分間キャッシュ
+    enabled: !!localStorage.getItem("auth_token"), // Only fetch if token exists
   });
 
   return {

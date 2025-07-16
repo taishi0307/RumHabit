@@ -35,12 +35,11 @@ export default function Home() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest({
-        url: "/api/auth/logout",
-        method: "POST",
-      });
+      await apiRequest("POST", "/api/auth/logout", {});
     },
     onSuccess: () => {
+      // Clear auth token from localStorage
+      localStorage.removeItem("auth_token");
       queryClient.clear();
       alert("ログアウトしました");
       // ページリロードでログイン画面に戻る

@@ -47,14 +47,14 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const result = await apiRequest({
-        url: "/api/auth/login",
-        method: "POST",
-        body: data,
-      });
-      return result;
+      const response = await apiRequest("POST", "/api/auth/login", data);
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Save the auth token to localStorage
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
+      }
       alert("ログイン成功");
       setLocation("/");
     },
@@ -65,15 +65,11 @@ export default function LoginPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationData) => {
-      const result = await apiRequest({
-        url: "/api/auth/register",
-        method: "POST",
-        body: {
-          email: data.email,
-          password: data.password,
-        },
+      const response = await apiRequest("POST", "/api/auth/register", {
+        email: data.email,
+        password: data.password,
       });
-      return result;
+      return response.json();
     },
     onSuccess: () => {
       alert("アカウント作成成功");

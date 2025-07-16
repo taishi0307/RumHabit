@@ -170,30 +170,29 @@ passport.deserializeUser(async (id: number, done) => {
 });
 
 // Authentication middleware
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  
-  // Check for JWT token in Authorization header
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  if (token) {
-    const decoded = verifyToken(token);
-    if (decoded) {
-      findUserById(decoded.userId)
-        .then(user => {
-          if (user) {
-            req.user = user;
-            return next();
-          }
-          return res.status(401).json({ error: "認証が必要です" });
-        })
-        .catch(() => res.status(401).json({ error: "認証が必要です" }));
-      return;
+export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.isAuthenticated()) {
+      return next();
     }
+    
+    // Check for JWT token in Authorization header
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        const user = await findUserById(decoded.userId);
+        if (user) {
+          req.user = user;
+          return next();
+        }
+      }
+    }
+    
+    res.status(401).json({ error: "認証が必要です" });
+  } catch (error) {
+    res.status(401).json({ error: "認証が必要です" });
   }
-  
-  res.status(401).json({ error: "認証が必要です" });
 };
 
 // Optional auth middleware (doesn't require authentication)

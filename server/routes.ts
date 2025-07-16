@@ -13,6 +13,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // Test route to verify API is working
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -85,6 +90,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user
+  app.get("/api/auth/user", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "ユーザー情報の取得に失敗しました" });
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout(() => {
+      res.json({ message: "ログアウトしました" });
+    });
+  });
+
   // Google OAuth routes
   app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
@@ -100,26 +128,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
-
-  app.post("/api/auth/logout", (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ error: "ログアウトに失敗しました" });
-      }
-      res.json({ message: "ログアウトしました" });
-    });
-  });
-
-  app.get("/api/auth/me", requireAuth, (req, res) => {
-    const user = req.user as any;
-    res.json({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImageUrl: user.profileImageUrl,
-    });
-  });
   // Goals endpoints
   app.get("/api/goals", requireAuth, async (req, res) => {
     try {
