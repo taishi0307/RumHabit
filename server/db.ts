@@ -11,5 +11,15 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// 無料プラン用の最適化された接続プール設定
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  // 無料プランでは接続数を制限
+  max: 1,
+  // 接続をより早く閉じる
+  idleTimeoutMillis: 10000,
+  // 接続タイムアウトを短縮
+  connectionTimeoutMillis: 5000,
+});
+
 export const db = drizzle({ client: pool, schema });

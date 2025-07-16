@@ -7,6 +7,7 @@ This is a comprehensive multi-goal habit tracking application built with React, 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Cost optimization: Use free tier only - no paid server costs.
 
 ## System Architecture
 
@@ -104,6 +105,15 @@ Preferred communication style: Simple, everyday language.
 - **Environment Variables**: DATABASE_URL required for production
 - **Build Commands**: `npm run build` creates production artifacts
 - **Start Command**: `npm start` runs production server
+
+## Recent Changes
+
+### Free Tier Optimization (July 2025)
+- **Database Connection Pool**: Optimized for free tier with max 1 connection, reduced timeout
+- **Logging Optimization**: Minimized verbose logging to reduce memory usage
+- **Service Worker**: Streamlined caching for smaller memory footprint
+- **Fallback Storage**: Auto-switch to in-memory storage if database unavailable
+- **Resource Efficiency**: Configured for 512MB memory limit and reduced resource usage
 
 ## Recent Changes
 

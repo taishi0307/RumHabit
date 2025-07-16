@@ -324,4 +324,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// 無料プランでは環境変数で切り替え可能
+const useInMemoryStorage = process.env.NODE_ENV === 'development' || !process.env.DATABASE_URL;
+
+export const storage = useInMemoryStorage ? new MemStorage() : new DatabaseStorage();

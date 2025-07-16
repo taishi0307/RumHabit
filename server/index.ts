@@ -19,9 +19,12 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    // 無料プランでは基本的なログのみ出力（メモリ節約）
+    if (path.startsWith("/api") && (res.statusCode >= 400 || duration > 1000)) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      
+      // エラーまたは遅いリクエストのみ詳細ログ
+      if (res.statusCode >= 400 && capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
