@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Target, Settings, Plus, Activity, Moon, Droplet } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Goal, HabitData } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
 
 interface Statistics {
   streak: number;
@@ -15,8 +14,6 @@ interface Statistics {
 }
 
 export default function Home() {
-  const queryClient = useQueryClient();
-
   const { data: goals = [] } = useQuery<Goal[]>({
     queryKey: ["/api/goals"],
   });
@@ -30,13 +27,13 @@ export default function Home() {
   });
 
   // Group goals by category
-  const goalsByCategory = goals?.reduce((acc, goal) => {
+  const goalsByCategory = goals.reduce((acc, goal) => {
     if (!acc[goal.category]) {
       acc[goal.category] = [];
     }
     acc[goal.category].push(goal);
     return acc;
-  }, {} as Record<string, Goal[]>) || {};
+  }, {} as Record<string, Goal[]>);
 
   // Calculate achievement rate for each goal
   const getGoalAchievementRate = (goalId: number) => {

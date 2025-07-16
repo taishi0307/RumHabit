@@ -13,14 +13,12 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
-  const token = localStorage.getItem("auth_token");
   
   const res = await fetch(url, {
     method,
     headers: {
       ...(data ? { "Content-Type": "application/json" } : {}),
       ...(isDev ? { "Cache-Control": "no-cache" } : {}), // 開発環境では no-cache
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
@@ -36,15 +34,8 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Get auth token from localStorage
-    const token = localStorage.getItem("auth_token");
-    
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
@@ -61,7 +52,7 @@ const isDev = window.location.hostname === 'localhost' || window.location.hostna
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "returnNull" }), // Changed to returnNull to avoid auth errors
+      queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: isDev ? true : false, // 開発環境では window focus で再取得
       staleTime: isDev ? 0 : 1000 * 60 * 5, // 開発環境では即座に古いデータとして扱う
