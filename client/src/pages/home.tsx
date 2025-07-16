@@ -220,8 +220,8 @@ export default function Home() {
                               let textColor = 'text-gray-400';
                               
                               if (day.isCurrentMonth) {
-                                bgColor = 'bg-white';
-                                textColor = 'text-white';
+                                bgColor = 'bg-gray-100';
+                                textColor = 'text-gray-600';
                                 
                                 if (day.hasRecord && day.achieved) {
                                   bgColor = 'bg-green-500';
