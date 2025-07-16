@@ -442,9 +442,24 @@ export const smartWatchRoutes = (app: any) => {
       console.log(`Syncing ${brand} data with token: ${accessToken ? '[TOKEN PROVIDED]' : '[NO TOKEN]'}`);
       console.log('Date range:', dateRange);
       
+      // トークンの形式をチェック
+      if (accessToken && accessToken.startsWith('fitbit-sample')) {
+        console.log('⚠️  DETECTED SAMPLE TOKEN - This is not a real Fitbit token!');
+      }
+      
       const workoutData = await apiManager.syncWorkoutData(brand, accessToken, dateRange);
       
       console.log(`Retrieved ${workoutData.length} workouts from ${brand}`);
+      
+      // データの内容をチェック
+      if (workoutData.length > 0) {
+        console.log('First workout sample:', {
+          id: workoutData[0].id,
+          date: workoutData[0].date,
+          activityType: workoutData[0].activityType,
+          isSample: workoutData[0].id?.includes('sample')
+        });
+      }
       
       // 取得したデータをデータベースに保存
       let savedCount = 0;

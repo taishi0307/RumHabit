@@ -115,9 +115,14 @@ Cost optimization: Use free tier only - no paid server costs.
 - **Fallback Storage**: Auto-switch to in-memory storage if database unavailable
 - **Resource Efficiency**: Configured for 512MB memory limit and reduced resource usage
 
+### Fitbit認証状況確認 (July 2025)
+- **問題確認**: 現在のシステムは実際のFitbitデータを取得できていない
+- **原因**: OAuth認証フローが正しく完了しておらず、無効なアクセストークンによりAPI呼び出しが失敗
+- **現在のデータ**: 全てサンプルデータ（認証エラー時のフォールバック）
+- **デバッグ機能追加**: 実際のFitbitデータかサンプルデータかを判定する機能を追加
+- **接続状態**: 画面表示のみで実際のAPI接続は確立されていない
+
 ## Recent Changes
-
-
 
 ### Smartwatch Integration (July 2025)
 - **Comprehensive API Integration**: Added support for Apple HealthKit, Huawei Health Kit, Xiaomi Mi Fitness (via Google Fit), Garmin Connect, and Google Fit APIs

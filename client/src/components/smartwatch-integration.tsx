@@ -291,6 +291,7 @@ export function SmartWatchIntegration() {
         console.log('Fitbit access token:', accessToken ? `Token exists (${accessToken.substring(0, 20)}...)` : 'Token not found');
         
         if (!accessToken) {
+          alert('❌ 実際のFitbitアクセストークンが見つかりません。\n\nFitbitデバイスを再接続してください：\n1. 「利用可能」タブでFitbitを選択\n2. 「接続」ボタンを押す\n3. Fitbitアカウントでログイン\n4. 認証完了後に再度同期を試してください');
           throw new Error('Fitbitアクセストークンが見つかりません。設定からFitbitデバイスを再接続してください。');
         }
         
@@ -318,7 +319,14 @@ export function SmartWatchIntegration() {
         
         console.log('同期されたワークアウト:', syncResult.workouts);
         console.log('同期結果の詳細:', syncResult);
-        alert(`${syncResult.workoutCount}件のワークアウトデータを同期しました`);
+        
+        // 実際のFitbitデータかサンプルデータかを判定
+        const isRealData = syncResult.workouts.every(w => !w.id?.includes('sample'));
+        const message = isRealData 
+          ? `✅ ${syncResult.workoutCount}件の実際のFitbitワークアウトデータを同期しました`
+          : `⚠️ ${syncResult.workoutCount}件のサンプルデータを同期しました（実際のFitbitデータではありません）`;
+        
+        alert(message);
       } else {
         // 他のデバイスのシミュレーション
         for (let i = 0; i <= 100; i += 20) {
