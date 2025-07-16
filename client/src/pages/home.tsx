@@ -5,17 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Goal, HabitData } from "@shared/schema";
@@ -64,6 +53,12 @@ export default function Home() {
       });
     }
   });
+
+  const handleDeleteGoal = (goalId: number, goalName: string) => {
+    if (window.confirm(`目標「${goalName}」を削除しますか？この操作は元に戻せません。`)) {
+      deleteGoalMutation.mutate(goalId);
+    }
+  };
 
   // Group goals by category
   const goalsByCategory = goals.reduce((acc, goal) => {
@@ -214,36 +209,17 @@ export default function Home() {
                               {goal.targetValue} {goal.unit}
                             </span>
                           </Link>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                                onClick={(e) => e.preventDefault()}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>目標を削除しますか？</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  この操作は元に戻せません。目標「{goal.name}」とその関連データがすべて削除されます。
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteGoalMutation.mutate(goal.id)}
-                                  disabled={deleteGoalMutation.isPending}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  {deleteGoalMutation.isPending ? "削除中..." : "削除"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <button
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer flex items-center justify-center transition-colors"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteGoal(goal.id, goal.name);
+                            }}
+                            title="目標を削除"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                         </div>
 
                         {/* Mini Calendar Grid */}
