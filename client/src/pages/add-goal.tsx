@@ -77,6 +77,7 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
     if (goalType) {
       const selectedGoalType = goalTypes.find(t => t.id === goalType);
       if (selectedGoalType && selectedGoalType.multipleValues) {
+        setSelectedType(goalType);
         form.setValue("type", goalType);
         form.setValue("name", selectedGoalType.name + "目標");
         form.setValue("category", selectedGoalType.category);
@@ -98,6 +99,7 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
       navigate("/");
     },
     onError: (error) => {
+      console.error("Goal creation error:", error);
       toast({
         title: "エラーが発生しました",
         description: "目標の作成に失敗しました。もう一度お試しください。",
@@ -143,6 +145,8 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
     // Ensure all numeric values are properly converted
     const processedData = {
       ...data,
+      // Set type to the selected type if it's not already set
+      type: data.type || selectedType,
       targetValue: data.targetValue === null || data.targetValue === undefined ? null : Number(data.targetValue),
       targetDistance: data.targetDistance === null || data.targetDistance === undefined ? null : Number(data.targetDistance),
       targetTime: data.targetTime === null || data.targetTime === undefined ? null : Number(data.targetTime),
@@ -151,6 +155,10 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
       targetSleepTime: data.targetSleepTime === null || data.targetSleepTime === undefined ? null : Number(data.targetSleepTime),
       targetSleepScore: data.targetSleepScore === null || data.targetSleepScore === undefined ? null : Number(data.targetSleepScore),
     };
+    
+    console.log("Form data before processing:", data);
+    console.log("Processed data:", processedData);
+    
     createGoalMutation.mutate(processedData);
   };
 
