@@ -115,7 +115,7 @@ export default function Home() {
             <CardDescription>全体的な達成状況</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex justify-around items-center">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">{statistics.streak}</div>
                 <div className="text-sm text-gray-600">連続達成日数</div>
@@ -154,8 +154,8 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get recent 7 days of data for mini calendar
-                  const recentDays = 7;
+                  // Get recent 30 days of data for mini calendar
+                  const recentDays = 30;
                   const today = new Date();
                   const miniCalendarData = [];
                   
@@ -199,8 +199,8 @@ export default function Home() {
 
                         {/* Mini Calendar Dots */}
                         <div className="mb-3">
-                          <div className="text-xs text-gray-600 mb-1">最近7日間</div>
-                          <div className="flex gap-1">
+                          <div className="text-xs text-gray-600 mb-1">最近30日間</div>
+                          <div className="flex gap-0.5 flex-wrap">
                             {miniCalendarData.map((day, index) => {
                               let dotColor = 'bg-gray-200';
                               if (day.hasRecord) {
@@ -210,7 +210,7 @@ export default function Home() {
                               return (
                                 <div
                                   key={index}
-                                  className={`w-3 h-3 rounded-full ${dotColor}`}
+                                  className={`w-2 h-2 rounded-full ${dotColor}`}
                                   title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '未達成') : '記録なし'}`}
                                 />
                               );
