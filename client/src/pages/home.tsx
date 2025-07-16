@@ -212,9 +212,9 @@ export default function Home() {
                           <div className="text-xs text-gray-500">
                             最新: {
                               goal.type === 'sleep-time' 
-                                ? parseFloat(recentAchievement.actualValue).toFixed(1)
+                                ? Number(recentAchievement.actualValue).toFixed(1)
                                 : goal.type === 'sleep-score'
-                                ? Math.round(parseFloat(recentAchievement.actualValue))
+                                ? Math.round(Number(recentAchievement.actualValue))
                                 : recentAchievement.actualValue
                             } {goal.unit} ({recentAchievement.date})
                             <Badge 
