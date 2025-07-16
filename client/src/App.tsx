@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import SettingsPage from "@/pages/settings";
 import GoalDetailPage from "@/pages/goal-detail";
 import AddGoalPage from "@/pages/add-goal";
+import { useEffect } from "react";
 
 function Router() {
   return (
@@ -24,6 +25,31 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    // 開発環境でのキャッシュ問題を防ぐため、ページ読み込み時に古いキャッシュを削除
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+    
+    if (isDev) {
+      // 開発環境では強制的にキャッシュを無効化
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+      
+      // Service Workerも削除
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

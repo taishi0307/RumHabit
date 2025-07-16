@@ -12,9 +12,14 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+  
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      ...(isDev ? { "Cache-Control": "no-cache" } : {}), // 開発環境では no-cache
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -41,13 +46,17 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+// 開発環境でのキャッシュ問題を防ぐ設定
+const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      refetchOnWindowFocus: isDev ? true : false, // 開発環境では window focus で再取得
+      staleTime: isDev ? 0 : 1000 * 60 * 5, // 開発環境では即座に古いデータとして扱う
+      cacheTime: isDev ? 0 : 1000 * 60 * 5, // 開発環境ではキャッシュ時間を0に
       retry: false,
     },
     mutations: {
