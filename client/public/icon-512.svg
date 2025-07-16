@@ -1,0 +1,6 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#3b82f6"/>
+  <circle cx="256" cy="256" r="160" fill="white"/>
+  <path d="M256 160 L256 256 L336 256" stroke="#3b82f6" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="40" fill="white" text-anchor="middle">習慣</text>
+</svg>
