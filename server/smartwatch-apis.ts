@@ -308,9 +308,11 @@ export class FitbitAPI implements SmartWatchAPI {
         console.log('Profile request failed:', profileResponse.status, await profileResponse.text());
       }
       
-      // Get activity logs for the date range
+      // Get activity logs for the date range - 複数のエンドポイントを試す
       console.log('Step 2: Fetching activity logs...');
-      const activitiesResponse = await fetch(
+      
+      // Method 1: Try activities/list endpoint
+      let activitiesResponse = await fetch(
         `${this.baseUrl}/1/user/-/activities/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
         {
           headers: {
@@ -319,6 +321,20 @@ export class FitbitAPI implements SmartWatchAPI {
           }
         }
       );
+      
+      // Method 2: If that fails, try activities/logs/list endpoint
+      if (!activitiesResponse.ok) {
+        console.log('activities/list failed, trying activities/logs/list...');
+        activitiesResponse = await fetch(
+          `${this.baseUrl}/1/user/-/activities/logs/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+      }
 
       console.log('Fitbit API response status:', activitiesResponse.status);
       const responseText = await activitiesResponse.text();
@@ -351,8 +367,36 @@ export class FitbitAPI implements SmartWatchAPI {
         const today = new Date();
         const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
         
-        for (let d = new Date(thirtyDaysAgo); d <= today; d.setDate(d.getDate() + 1)) {
-          const dateStr = d.toISOString().split('T')[0];
+        // 代わりにTCXログデータを取得する
+        try {
+          const logsResponse = await fetch(
+            `${this.baseUrl}/1/user/-/activities/logs/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Accept': 'application/json'
+              }
+            }
+          );
+          
+          if (logsResponse.ok) {
+            const logsData = await logsResponse.json();
+            console.log('Fitbit activity logs:', JSON.stringify(logsData, null, 2));
+            
+            if (logsData.activities && logsData.activities.length > 0) {
+              console.log(`Found ${logsData.activities.length} activity logs`);
+              activitiesData.activities = [...(activitiesData.activities || []), ...logsData.activities];
+            }
+          }
+        } catch (error) {
+          console.log('Error fetching activity logs:', error.message);
+        }
+        
+        // 過去7日間の日次データも取得
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+          const dateStr = date.toISOString().split('T')[0];
+          
           try {
             const dailyResponse = await fetch(
               `${this.baseUrl}/1/user/-/activities/date/${dateStr}.json`,
@@ -384,14 +428,39 @@ export class FitbitAPI implements SmartWatchAPI {
       for (const activity of activitiesData.activities || []) {
         console.log('Processing activity:', JSON.stringify(activity, null, 2));
         
+        // Fitbitデータの正確な変換
+        // 時間の変換（ミリ秒から秒へ）
+        let durationInSeconds = 0;
+        if (activity.duration) {
+          durationInSeconds = Math.round(activity.duration / 1000);
+        } else if (activity.activeDuration) {
+          durationInSeconds = Math.round(activity.activeDuration / 1000);
+        }
+        
+        console.log('Duration conversion:', {
+          originalDuration: activity.duration,
+          activeDuration: activity.activeDuration,
+          convertedSeconds: durationInSeconds,
+          formattedTime: `${Math.floor(durationInSeconds / 60)}分${durationInSeconds % 60}秒`
+        });
+        
+        // 距離の単位変換（マイルからキロメートル、またはそのまま）
+        const distanceInKm = activity.distance || 0;
+        
+        // 心拍数データの取得
+        const heartRate = activity.averageHeartRate || activity.heartRate || 0;
+        
+        // カロリーデータの取得
+        const calories = activity.calories || activity.caloriesOut || 0;
+        
         const workout: WorkoutData = {
           id: activity.logId?.toString() || activity.activityId?.toString() || `fitbit-${Date.now()}`,
           date: activity.startDate || activity.originalStartTime?.split('T')[0] || new Date().toISOString().split('T')[0],
           time: activity.startTime || activity.originalStartTime?.split('T')[1]?.split('.')[0] || '12:00:00',
-          duration: Math.round((activity.duration || activity.activeDuration || 0) / 1000), // Convert ms to seconds
-          distance: activity.distance || 0,
-          heartRate: activity.averageHeartRate || 0,
-          calories: activity.calories || 0,
+          duration: durationInSeconds,
+          distance: Math.round(distanceInKm * 100) / 100, // 小数点以下2桁に丸める
+          heartRate: heartRate,
+          calories: calories,
           activityType: activity.activityName || activity.name || 'Unknown',
           deviceId: 'fitbit',
           rawData: activity
@@ -549,22 +618,43 @@ export const smartWatchRoutes = (app: any) => {
         });
       }
       
+      // 重複データを除去
+      const uniqueWorkouts = workoutData.filter((workout, index, self) => 
+        index === self.findIndex(w => w.id === workout.id)
+      );
+      
+      console.log(`Filtered ${workoutData.length} workouts to ${uniqueWorkouts.length} unique workouts`);
+      
       // 取得したデータをデータベースに保存
       let savedCount = 0;
       
-      for (const workout of workoutData) {
+      for (const workout of uniqueWorkouts) {
         try {
           const { storage } = await import('./storage');
-          await storage.createWorkout({
-            date: workout.date,
-            time: workout.time,
-            distance: workout.distance,
-            heartRate: workout.heartRate,
-            duration: workout.duration,
-            calories: workout.calories,
-          });
-          savedCount++;
-          console.log(`Saved workout: ${workout.date} ${workout.time} (${workout.activityType})`);
+          
+          // 既存のワークアウトがあるかチェック（日付とIDで重複チェック）
+          const existingWorkouts = await storage.getWorkoutsByDateRange(workout.date, workout.date);
+          const isDuplicate = existingWorkouts.some(existing => 
+            existing.date === workout.date && 
+            existing.time === workout.time &&
+            existing.distance === workout.distance &&
+            existing.heartRate === workout.heartRate
+          );
+          
+          if (!isDuplicate) {
+            await storage.createWorkout({
+              date: workout.date,
+              time: workout.time,
+              distance: workout.distance,
+              heartRate: workout.heartRate,
+              duration: workout.duration,
+              calories: workout.calories,
+            });
+            savedCount++;
+            console.log(`Saved new workout: ${workout.date} ${workout.time} (${workout.activityType})`);
+          } else {
+            console.log(`Skipped duplicate workout: ${workout.date} ${workout.time}`);
+          }
         } catch (error) {
           console.error('Error saving workout:', error);
         }
