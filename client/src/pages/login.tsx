@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
+// import { useSimpleToast } from "@/hooks/useSimpleToast";
 import { apiRequest } from "@/lib/queryClient";
 import { LoginData, loginSchema } from "@shared/schema";
 
@@ -26,7 +26,7 @@ type RegistrationData = z.infer<typeof registrationSchema>;
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [isRegistering, setIsRegistering] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useSimpleToast();
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -55,18 +55,11 @@ export default function LoginPage() {
       return result;
     },
     onSuccess: () => {
-      toast({
-        title: "ログイン成功",
-        description: "ホーム画面に移動します",
-      });
+      alert("ログイン成功");
       setLocation("/");
     },
     onError: (error: any) => {
-      toast({
-        title: "ログインエラー",
-        description: error.message || "ログインに失敗しました",
-        variant: "destructive",
-      });
+      alert("ログインエラー: " + (error.message || "ログインに失敗しました"));
     },
   });
 
@@ -83,18 +76,11 @@ export default function LoginPage() {
       return result;
     },
     onSuccess: () => {
-      toast({
-        title: "アカウント作成成功",
-        description: "ログインしてください",
-      });
+      alert("アカウント作成成功");
       setIsRegistering(false);
     },
     onError: (error: any) => {
-      toast({
-        title: "アカウント作成エラー",
-        description: error.message || "アカウント作成に失敗しました",
-        variant: "destructive",
-      });
+      alert("アカウント作成エラー: " + (error.message || "アカウント作成に失敗しました"));
     },
   });
 

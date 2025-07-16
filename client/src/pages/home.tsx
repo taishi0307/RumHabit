@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { Goal, HabitData } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+// import { useSimpleToast } from "@/hooks/useSimpleToast";
 import { apiRequest } from "@/lib/queryClient";
 
 interface Statistics {
@@ -18,7 +18,7 @@ interface Statistics {
 
 export default function Home() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  // const { toast } = useSimpleToast();
   const queryClient = useQueryClient();
 
   const { data: goals = [] } = useQuery<Goal[]>({
@@ -42,19 +42,12 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.clear();
-      toast({
-        title: "ログアウトしました",
-        description: "またのご利用をお待ちしております",
-      });
+      alert("ログアウトしました");
       // ページリロードでログイン画面に戻る
       window.location.reload();
     },
     onError: (error: any) => {
-      toast({
-        title: "ログアウトエラー",
-        description: error.message || "ログアウトに失敗しました",
-        variant: "destructive",
-      });
+      alert("ログアウトエラー: " + (error.message || "ログアウトに失敗しました"));
     },
   });
 

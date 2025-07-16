@@ -1,7 +1,6 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import SettingsPage from "@/pages/settings";
@@ -9,6 +8,7 @@ import GoalDetailPage from "@/pages/goal-detail";
 import AddGoalPage from "@/pages/add-goal";
 import LoginPage from "@/pages/login";
 import { useAuth } from "@/hooks/useAuth";
+// import { ToastProvider, SimpleToastContainer } from "@/hooks/useSimpleToast";
 import { useEffect } from "react";
 
 function Router() {
@@ -70,7 +70,6 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster />
       <Router />
     </QueryClientProvider>
   );
