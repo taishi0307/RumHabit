@@ -444,12 +444,24 @@ export const smartWatchRoutes = (app: any) => {
         return res.status(400).json({ error: 'Authorization code is required' });
       }
 
-      const clientId = process.env.FITBIT_CLIENT_ID;
-      const clientSecret = process.env.FITBIT_CLIENT_SECRET;
+      const clientId = process.env.FITBIT_CLIENT_ID || '23QGWK';
+      const clientSecret = process.env.FITBIT_CLIENT_SECRET || '1a35a584cb0c6d37abefd2f9b27cd0f6';
       const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
 
-      if (!clientId || !clientSecret) {
-        return res.status(500).json({ error: 'Fitbit credentials not configured' });
+      console.log('Callback - Environment variables:');
+      console.log('- FITBIT_CLIENT_ID:', process.env.FITBIT_CLIENT_ID);
+      console.log('- FITBIT_CLIENT_SECRET:', process.env.FITBIT_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
+      console.log('- Using clientId:', clientId);
+      console.log('- Code:', code);
+
+      if (!clientId || !clientSecret || clientId === 'undefined' || clientSecret === 'undefined') {
+        return res.status(500).json({ 
+          error: 'Fitbit credentials not configured',
+          debug: {
+            clientId: process.env.FITBIT_CLIENT_ID,
+            clientSecret: process.env.FITBIT_CLIENT_SECRET ? '[SET]' : '[NOT SET]'
+          }
+        });
       }
 
       const fitbitApi = new FitbitAPI();
@@ -463,6 +475,7 @@ export const smartWatchRoutes = (app: any) => {
       // 認証成功時のリダイレクト
       res.redirect(`/settings?fitbit_connected=true&access_token=${accessToken}`);
     } catch (error) {
+      console.error('Callback error:', error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -470,11 +483,24 @@ export const smartWatchRoutes = (app: any) => {
   // Fitbit認証URL生成
   app.post('/api/smartwatch/fitbit/auth-url', async (req: Request, res: Response) => {
     try {
-      const clientId = process.env.FITBIT_CLIENT_ID;
+      const clientId = process.env.FITBIT_CLIENT_ID || '23QGWK';
       const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
 
-      if (!clientId) {
-        return res.status(500).json({ error: 'Fitbit client ID not configured' });
+      console.log('Environment variables:');
+      console.log('- NODE_ENV:', process.env.NODE_ENV);
+      console.log('- FITBIT_CLIENT_ID:', process.env.FITBIT_CLIENT_ID);
+      console.log('- Using clientId:', clientId);
+      console.log('- Redirect URI:', redirectUri);
+
+      if (!clientId || clientId === 'undefined') {
+        return res.status(500).json({ 
+          error: 'Fitbit client ID not configured',
+          debug: {
+            env: process.env.NODE_ENV,
+            clientId: process.env.FITBIT_CLIENT_ID,
+            fallback: '23QGWK'
+          }
+        });
       }
 
       const fitbitApi = new FitbitAPI();
@@ -484,8 +510,10 @@ export const smartWatchRoutes = (app: any) => {
         redirectUri,
       });
 
+      console.log('Generated auth URL:', authUrl);
       res.json({ authUrl });
     } catch (error) {
+      console.error('Auth URL generation error:', error);
       res.status(500).json({ error: error.message });
     }
   });
