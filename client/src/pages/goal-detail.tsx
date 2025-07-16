@@ -114,17 +114,7 @@ export default function GoalDetailPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">達成率</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{achievementRate}%</div>
-            <Progress value={achievementRate} className="mt-2" />
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">連続達成</CardTitle>
