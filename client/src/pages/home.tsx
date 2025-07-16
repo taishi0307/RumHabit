@@ -186,17 +186,15 @@ export default function Home() {
                     <Link key={goal.id} href={`/goals/${goal.id}`}>
                       <div className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-800">{goal.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-800">{goal.name}</h3>
+                            <span className="text-sm text-gray-600">
+                              {goal.targetValue} {goal.unit}
+                            </span>
+                          </div>
                           <Badge variant={goal.isActive ? "default" : "secondary"}>
                             {goal.isActive ? "アクティブ" : "非アクティブ"}
                           </Badge>
-                        </div>
-                        
-                        <div className="mb-3">
-                          <div className="text-2xl font-bold text-gray-800">
-                            {goal.targetValue} {goal.unit}
-                          </div>
-                          <div className="text-sm text-gray-600">目標値</div>
                         </div>
 
                         <div className="mb-3">
@@ -209,7 +207,9 @@ export default function Home() {
 
                         {/* Mini Calendar Grid */}
                         <div className="mb-3">
-                          <div className="text-xs text-gray-600 mb-2">今月の記録</div>
+                          <div className="text-center text-xs text-gray-600 mb-2">
+                            {goal.name} - {goal.targetValue} {goal.unit}
+                          </div>
                           <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
                               let bgColor = 'bg-gray-100';
@@ -229,7 +229,7 @@ export default function Home() {
                                 <div
                                   key={index}
                                   className={`${bgColor} ${textColor} aspect-square flex items-center justify-center text-xs font-medium`}
-                                  title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '未達成') : '記録なし'}`}
+                                  title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '記録なし') : '記録なし'}`}
                                 >
                                   {day.day}
                                 </div>

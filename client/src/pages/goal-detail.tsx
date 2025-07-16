@@ -171,10 +171,6 @@ export default function GoalDetailPage() {
                   <span>達成</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span>未達成</span>
-                </div>
-                <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
                   <span>記録なし</span>
                 </div>
@@ -197,7 +193,6 @@ export default function GoalDetailPage() {
                   
                   let bgColor = 'bg-gray-100';
                   if (status === 'achieved') bgColor = 'bg-green-500';
-                  if (status === 'failed') bgColor = 'bg-red-500';
                   
                   return (
                     <div
