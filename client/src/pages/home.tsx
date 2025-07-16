@@ -248,23 +248,7 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {recentAchievement && (
-                          <div className="text-xs text-gray-500">
-                            最新: {
-                              goal.type === 'sleep-time' || (goal.type === 'sleep' && goal.unit === '時間')
-                                ? Number(recentAchievement.actualValue).toFixed(1)
-                                : goal.type === 'sleep-score'
-                                ? Math.round(Number(recentAchievement.actualValue))
-                                : recentAchievement.actualValue
-                            } {goal.unit} ({recentAchievement.date})
-                            <Badge 
-                              variant={recentAchievement.achieved ? "default" : "secondary"}
-                              className="ml-2"
-                            >
-                              {recentAchievement.achieved ? "達成" : "未達成"}
-                            </Badge>
-                          </div>
-                        )}
+
                         </CardContent>
                       </Card>
                   );
