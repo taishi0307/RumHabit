@@ -21,11 +21,12 @@ const goalTypes = [
     icon: Play,
     description: "ランニング目標を設定",
     category: "workout",
-    subtypes: [
-      { id: "workout-distance", name: "距離", unit: "km" },
-      { id: "workout-time", name: "時間", unit: "分" },
-      { id: "workout-heart-rate", name: "平均心拍数", unit: "bpm" },
-      { id: "workout-calories", name: "消費エネルギー", unit: "kcal" }
+    multipleValues: true,
+    fields: [
+      { id: "distance", name: "距離", unit: "km", key: "targetDistance" },
+      { id: "time", name: "時間", unit: "分", key: "targetTime" },
+      { id: "heart-rate", name: "平均心拍数", unit: "bpm", key: "targetHeartRate" },
+      { id: "calories", name: "消費エネルギー", unit: "kcal", key: "targetCalories" }
     ]
   },
   {
@@ -34,9 +35,10 @@ const goalTypes = [
     icon: Moon,
     description: "睡眠目標を設定",
     category: "sleep",
-    subtypes: [
-      { id: "sleep-time", name: "睡眠時間", unit: "時間" },
-      { id: "sleep-score", name: "睡眠スコア", unit: "点" }
+    multipleValues: true,
+    fields: [
+      { id: "time", name: "睡眠時間", unit: "時間", key: "targetSleepTime" },
+      { id: "score", name: "睡眠スコア", unit: "点", key: "targetSleepScore" }
     ]
   }
 ];
@@ -92,6 +94,11 @@ export default function AddGoalPage() {
       if (goalType.subtypes) {
         // Has subtypes, don't set form values yet
         setSelectedSubtype("");
+      } else if (goalType.multipleValues) {
+        // Multiple values, set basic form values
+        form.setValue("type", typeId);
+        form.setValue("name", goalType.name + "目標");
+        form.setValue("category", goalType.category);
       } else {
         // No subtypes, set form values directly
         form.setValue("type", typeId);
@@ -162,6 +169,87 @@ export default function AddGoalPage() {
         </Card>
       )}
 
+      {/* Multiple Values Configuration */}
+      {selectedType && goalTypes.find(t => t.id === selectedType)?.multipleValues && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {(() => {
+                const selectedGoalType = goalTypes.find(t => t.id === selectedType);
+                if (selectedGoalType) {
+                  const Icon = selectedGoalType.icon;
+                  return (
+                    <>
+                      <Icon className="h-5 w-5" />
+                      {selectedGoalType.name}目標の設定
+                    </>
+                  );
+                }
+                return null;
+              })()}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>目標名</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="目標名を入力" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Multiple value fields */}
+                {goalTypes.find(t => t.id === selectedType)?.fields?.map((field) => (
+                  <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={field.key as any}
+                    render={({ field: formField }) => (
+                      <FormItem>
+                        <FormLabel>{field.name} ({field.unit})</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...formField}
+                            type="number" 
+                            step="0.1" 
+                            placeholder={`${field.name}を入力`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+
+                <div className="flex gap-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setSelectedType("")}
+                  >
+                    戻る
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createGoalMutation.isPending}
+                  >
+                    {createGoalMutation.isPending ? "作成中..." : "目標を作成"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Subtype Selection */}
       {selectedType && !selectedSubtype && goalTypes.find(t => t.id === selectedType)?.subtypes && (
         <Card>
@@ -199,7 +287,7 @@ export default function AddGoalPage() {
       )}
 
       {/* Goal Configuration */}
-      {(selectedType && !goalTypes.find(t => t.id === selectedType)?.subtypes) || selectedSubtype ? (
+      {(selectedType && !goalTypes.find(t => t.id === selectedType)?.subtypes && !goalTypes.find(t => t.id === selectedType)?.multipleValues) || selectedSubtype ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
