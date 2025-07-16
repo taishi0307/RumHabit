@@ -1,4 +1,5 @@
-import "./index.css";
+// Remove CSS import to avoid potential issues
+// import "./index.css";
 
 // Pure JavaScript approach - no React dependencies
 console.log("Starting pure JavaScript app...");

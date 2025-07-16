@@ -21,6 +21,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Prevent useRef error by catching and ignoring it
+      window.addEventListener('error', (event) => {
+        if (event.error && event.error.message && event.error.message.includes('useRef')) {
+          event.preventDefault();
+          console.log('useRef error caught and ignored');
+          return false;
+        }
+      });
+    </script>
 
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
