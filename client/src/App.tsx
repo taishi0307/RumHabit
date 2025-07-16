@@ -7,12 +7,14 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import SettingsPage from "@/pages/settings";
 import GoalDetailPage from "@/pages/goal-detail";
+import AddGoalPage from "@/pages/add-goal";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/add-goal" component={AddGoalPage} />
       <Route path="/goal/:id" component={GoalDetailPage} />
       <Route component={NotFound} />
     </Switch>

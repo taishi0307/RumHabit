@@ -93,10 +93,9 @@ export default function Home() {
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <Link href="/settings">
+        <Link href="/add-goal">
           <Button variant="outline" size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            目標を追加
+            <Plus className="h-4 w-4" />
           </Button>
         </Link>
         <Link href="/settings">
