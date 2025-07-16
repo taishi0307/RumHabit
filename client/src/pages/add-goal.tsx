@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,9 +43,13 @@ const goalTypes = [
   }
 ];
 
-export default function AddGoalPage() {
+interface AddGoalPageProps {
+  goalType?: string;
+}
+
+export default function AddGoalPage({ goalType }: AddGoalPageProps) {
   const [, navigate] = useLocation();
-  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedType, setSelectedType] = useState<string>(goalType || "");
   const [selectedSubtype, setSelectedSubtype] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -67,6 +71,18 @@ export default function AddGoalPage() {
       isActive: true
     }
   });
+
+  // Set form values when goalType prop is provided
+  useEffect(() => {
+    if (goalType) {
+      const selectedGoalType = goalTypes.find(t => t.id === goalType);
+      if (selectedGoalType && selectedGoalType.multipleValues) {
+        form.setValue("type", goalType);
+        form.setValue("name", selectedGoalType.name + "目標");
+        form.setValue("category", selectedGoalType.category);
+      }
+    }
+  }, [goalType, form]);
 
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: InsertGoal) => {
@@ -96,15 +112,12 @@ export default function AddGoalPage() {
   const handleTypeSelect = (typeId: string) => {
     const goalType = goalTypes.find(t => t.id === typeId);
     if (goalType) {
-      setSelectedType(typeId);
       if (goalType.subtypes) {
         // Has subtypes, don't set form values yet
         setSelectedSubtype("");
       } else if (goalType.multipleValues) {
-        // Multiple values, set basic form values
-        form.setValue("type", typeId);
-        form.setValue("name", goalType.name + "目標");
-        form.setValue("category", goalType.category);
+        // Multiple values, navigate to specific page
+        navigate(`/add-goal/${typeId}`);
       } else {
         // No subtypes, set form values directly
         form.setValue("type", typeId);
@@ -250,7 +263,7 @@ export default function AddGoalPage() {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setSelectedType("")}
+                    onClick={() => navigate("/add-goal")}
                   >
                     戻る
                   </Button>

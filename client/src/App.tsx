@@ -15,6 +15,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/add-goal" component={AddGoalPage} />
+      <Route path="/add-goal/workout" component={() => <AddGoalPage goalType="workout" />} />
+      <Route path="/add-goal/sleep" component={() => <AddGoalPage goalType="sleep" />} />
       <Route path="/goal/:id" component={GoalDetailPage} />
       <Route component={NotFound} />
     </Switch>
