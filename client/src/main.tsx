@@ -31,7 +31,8 @@ function SimpleApp() {
           fontSize: "1.2rem",
           marginBottom: "30px"
         }}>
-          アプリケーションが正常に動作しています！
+          アプリケーションが正常に動作しています！<br/>
+          URL: {window.location.href}
         </p>
         <button 
           onClick={() => {
@@ -57,13 +58,11 @@ function SimpleApp() {
 }
 
 // Immediate render without any dependencies
-document.addEventListener('DOMContentLoaded', () => {
-  const rootElement = document.getElementById("root");
-  if (rootElement) {
-    console.log("Rendering SimpleApp...");
-    createRoot(rootElement).render(<SimpleApp />);
-  } else {
-    console.error("Root element not found");
-    document.body.innerHTML = '<div style="padding: 20px; font-size: 20px; color: red;">Root element not found!</div>';
-  }
-});
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  console.log("Rendering SimpleApp...");
+  createRoot(rootElement).render(<SimpleApp />);
+} else {
+  console.error("Root element not found");
+  document.body.innerHTML = '<div style="padding: 20px; font-size: 20px; color: red;">Root element not found!</div>';
+}
