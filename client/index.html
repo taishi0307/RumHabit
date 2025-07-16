@@ -13,12 +13,60 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#f9fafb" />
+    <meta name="msapplication-navbutton-color" content="#f9fafb" />
     
     <!-- Status bar styling -->
     <style>
       /* Ensure consistent background color for status bar area */
       html, body {
         background-color: #f9fafb;
+      }
+      
+      /* Remove any borders or lines from the top of the app */
+      html, body, #root {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        border-top: none !important;
+        border-bottom: none !important;
+      }
+      
+      /* Remove any default browser styling that might cause lines */
+      * {
+        border-top: none !important;
+        border-bottom: none !important;
+      }
+      
+      /* PWA specific styling to remove status bar line */
+      @media all and (display-mode: standalone) {
+        html, body {
+          padding-top: 0 !important;
+          border-top: none !important;
+          margin-top: 0 !important;
+        }
+        
+        body::before {
+          content: none !important;
+        }
+      }
+      
+      /* Remove any Safari-specific styling */
+      @media screen and (-webkit-min-device-pixel-ratio: 1) {
+        html, body {
+          border-top: none !important;
+          -webkit-appearance: none !important;
+        }
+      }
+      
+      /* Remove any potential hr or line elements */
+      hr {
+        display: none !important;
+      }
+      
+      /* Remove any underline decorations */
+      * {
+        text-decoration: none !important;
       }
     </style>
   </head>

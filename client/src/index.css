@@ -49,15 +49,39 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
   html, body {
     background-color: hsl(0, 0%, 97.6%); /* Light gray background matching app */
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background-color: hsl(0, 0%, 97.6%);
+  }
+
+  /* Remove any borders/lines from the top of the app */
+  html, body, #root {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+
+  /* Remove any default browser styling that might cause lines */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Only apply borders to components that need them */
+  .border {
+    @apply border-border;
+  }
+
+  /* Specifically target any top borders */
+  body::before,
+  body::after,
+  #root::before,
+  #root::after {
+    display: none !important;
   }
 }
