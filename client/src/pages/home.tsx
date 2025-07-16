@@ -154,12 +154,10 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get calendar data for current month (7x5 grid)
-                  const today = new Date();
-                  const currentMonth = today.getMonth();
-                  const currentYear = today.getFullYear();
+                  // Get calendar data for July 2025 (sample data month)
+                  const currentMonth = 6; // July (0-indexed)
+                  const currentYear = 2025;
                   const firstDay = new Date(currentYear, currentMonth, 1);
-                  const lastDay = new Date(currentYear, currentMonth + 1, 0);
                   const startOfWeek = new Date(firstDay);
                   startOfWeek.setDate(firstDay.getDate() - firstDay.getDay());
                   
@@ -169,7 +167,13 @@ export default function Home() {
                   for (let i = 0; i < 35; i++) {
                     const date = new Date(startOfWeek);
                     date.setDate(startOfWeek.getDate() + i);
-                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    // Format date to match data format (YYYY-MM-DD)
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+                    
                     const record = habitData.find(data => data.goalId === goal.id && data.date === dateStr);
                     const isCurrentMonth = date.getMonth() === currentMonth;
                     

@@ -76,7 +76,12 @@ export default function GoalDetailPage() {
   });
 
   const getDayStatus = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Format date to match data format (YYYY-MM-DD)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
     const achieved = calendarData.get(dateStr);
     if (achieved === true) return 'achieved';
     if (achieved === false) return 'failed';
@@ -185,11 +190,17 @@ export default function GoalDetailPage() {
               </div>
               
               <div className="grid grid-cols-7 gap-1">
-                {/* Generate calendar for current month */}
+                {/* Generate calendar for July 2025 */}
                 {Array.from({ length: 31 }, (_, i) => {
                   const date = new Date(2025, 6, i + 1); // July 2025
+                  
+                  // Format date to match data format (YYYY-MM-DD)
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  const dateStr = `${year}-${month}-${day}`;
+                  
                   const status = getDayStatus(date);
-                  const dayOfWeek = date.getDay();
                   
                   let bgColor = 'bg-gray-100';
                   if (status === 'achieved') bgColor = 'bg-green-500';
