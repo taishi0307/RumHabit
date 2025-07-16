@@ -154,12 +154,14 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get calendar data for July 2025 (sample data month)
-                  const currentMonth = 6; // July (0-indexed)
-                  const currentYear = 2025;
-                  const firstDay = new Date(currentYear, currentMonth, 1);
-                  const startOfWeek = new Date(firstDay);
-                  startOfWeek.setDate(firstDay.getDate() - firstDay.getDay());
+                  // Get calendar data for recent 30 days (7x5 grid = 35 days)
+                  const today = new Date();
+                  const startDate = new Date(today);
+                  startDate.setDate(today.getDate() - 29); // 30 days back
+                  
+                  // Find the start of the week for the grid
+                  const startOfWeek = new Date(startDate);
+                  startOfWeek.setDate(startDate.getDate() - startDate.getDay());
                   
                   const miniCalendarData = [];
                   
@@ -175,14 +177,14 @@ export default function Home() {
                     const dateStr = `${year}-${month}-${day}`;
                     
                     const record = habitData.find(data => data.goalId === goal.id && data.date === dateStr);
-                    const isCurrentMonth = date.getMonth() === currentMonth;
+                    const isInRange = date >= startDate && date <= today;
                     
                     miniCalendarData.push({
                       date: dateStr,
                       day: date.getDate(),
                       achieved: record?.achieved || false,
                       hasRecord: !!record,
-                      isCurrentMonth: isCurrentMonth,
+                      isInRange: isInRange,
                     });
                   }
                   
@@ -219,9 +221,9 @@ export default function Home() {
                               let bgColor = 'bg-gray-100';
                               let textColor = 'text-gray-400';
                               
-                              if (day.isCurrentMonth) {
+                              if (day.isInRange) {
                                 bgColor = 'bg-gray-100';
-                                textColor = 'text-gray-600';
+                                textColor = 'text-white';
                                 
                                 if (day.hasRecord && day.achieved) {
                                   bgColor = 'bg-green-500';
