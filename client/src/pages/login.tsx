@@ -13,7 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, setAuthToken } from "@/lib/queryClient";
 import { loginSchema, insertUserSchema } from "@shared/schema";
 
-const registrationSchema = insertUserSchema.extend({
+const registrationSchema = insertUserSchema.omit({
+  firstName: true,
+  lastName: true,
+}).extend({
   confirmPassword: z.string().min(8, "パスワードは8文字以上で入力してください"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "パスワードが一致しません",
@@ -43,8 +46,6 @@ export default function LoginPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      firstName: "",
-      lastName: "",
     },
   });
 
@@ -187,40 +188,6 @@ export default function LoginPage() {
           ) : (
             <Form {...registrationForm}>
               <form onSubmit={registrationForm.handleSubmit(handleRegister)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={registrationForm.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>名前</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="名前"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={registrationForm.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>姓</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="姓"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
                 <FormField
                   control={registrationForm.control}
                   name="email"

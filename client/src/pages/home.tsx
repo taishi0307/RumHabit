@@ -152,7 +152,7 @@ export default function Home() {
           </Link>
           {user && (
             <div className="text-sm text-gray-600">
-              こんにちは、{user.firstName || user.email}さん
+              こんにちは、{user.email}さん
             </div>
           )}
         </div>
