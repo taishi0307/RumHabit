@@ -61,7 +61,7 @@ const isDev = window.location.hostname === 'localhost' || window.location.hostna
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }), // Changed to returnNull to avoid auth errors
       refetchInterval: false,
       refetchOnWindowFocus: isDev ? true : false, // 開発環境では window focus で再取得
       staleTime: isDev ? 0 : 1000 * 60 * 5, // 開発環境では即座に古いデータとして扱う
