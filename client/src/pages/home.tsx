@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Target, Settings, Plus, Activity, Moon, Droplet, Trash2 } from "lucide-react";
+import { Target, Settings, Plus, Activity, Moon, Droplet, Trash2, LogOut, User } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, removeAuthToken } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 import type { Goal, HabitData } from "@shared/schema";
 
 interface Statistics {
@@ -18,6 +19,7 @@ interface Statistics {
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: goals = [] } = useQuery<Goal[]>({
     queryKey: ["/api/goals"],
@@ -53,6 +55,21 @@ export default function Home() {
       });
     }
   });
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/logout");
+      removeAuthToken();
+      queryClient.clear();
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still remove token and redirect even if logout API fails
+      removeAuthToken();
+      queryClient.clear();
+      window.location.href = "/login";
+    }
+  };
 
   const handleDeleteGoal = (goalId: number, goalName: string) => {
     if (window.confirm(`目標「${goalName}」を削除しますか？この操作は元に戻せません。`)) {
@@ -127,20 +144,34 @@ export default function Home() {
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)', borderTop: 'none' }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6" style={{ borderTop: 'none', borderBottom: 'none' }}>
-        <div>
+        <div className="flex items-center space-x-3">
           <Link href="/add-goal">
             <Button variant="outline" size="sm">
               <Plus className="h-4 w-4" />
             </Button>
           </Link>
+          {user && (
+            <div className="text-sm text-gray-600">
+              こんにちは、{user.firstName || user.email}さん
+            </div>
+          )}
         </div>
-        <div>
+        <div className="flex items-center space-x-2">
           <Link href="/settings">
             <Button variant="outline" size="sm" className="text-gray-500 border-gray-300 hover:bg-gray-50">
               <Settings className="h-3 w-3 mr-1" />
               設定
             </Button>
           </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="text-gray-500 border-gray-300 hover:bg-gray-50"
+          >
+            <LogOut className="h-3 w-3 mr-1" />
+            ログアウト
+          </Button>
         </div>
       </div>
 

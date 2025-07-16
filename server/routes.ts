@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertGoalSchema, insertWorkoutSchema, insertHabitDataSchema, type HabitData, insertUserSchema, loginSchema } from "@shared/schema";
 import { smartWatchRoutes } from "./smartwatch-apis";
-import { sessionConfig, requireAuth, optionalAuth, createUser, findUserByEmail, verifyPassword, generateToken } from "./auth";
+import { sessionConfig, requireAuth, optionalAuth, createUser, findUserByEmail, verifyPassword, generateToken, verifyToken, findUserById } from "./auth";
 import passport from "passport";
 import { z } from "zod";
 
@@ -91,16 +91,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get current user
-  app.get("/api/auth/user", requireAuth, async (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
     try {
-      const user = req.user as any;
-      res.json({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-      });
+      // Check session-based auth first
+      if (req.isAuthenticated && req.isAuthenticated()) {
+        const user = req.user as any;
+        return res.json({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileImageUrl: user.profileImageUrl,
+        });
+      }
+
+      // Check JWT token
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          const user = await findUserById(decoded.userId);
+          if (user) {
+            return res.json({
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              profileImageUrl: user.profileImageUrl,
+            });
+          }
+        }
+      }
+
+      res.status(401).json({ error: "認証が必要です" });
     } catch (error) {
       res.status(500).json({ error: "ユーザー情報の取得に失敗しました" });
     }
@@ -128,10 +151,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
-  // Goals endpoints (認証なし)
-  app.get("/api/goals", async (req, res) => {
+  // Goals endpoints (認証が必要)
+  app.get("/api/goals", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const category = req.query.category as string;
       const goals = category 
         ? await storage.getGoalsByCategory(userId, category)
@@ -142,9 +166,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/goals", async (req, res) => {
+  app.post("/api/goals", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       console.log("Received goal data:", req.body);
       const goalData = insertGoalSchema.parse(req.body);
       console.log("Parsed goal data:", goalData);
@@ -163,9 +188,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/goals/:id", async (req, res) => {
+  app.put("/api/goals/:id", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const id = parseInt(req.params.id);
       const goalData = insertGoalSchema.parse(req.body);
       const goal = await storage.updateGoal(userId, id, goalData);
@@ -179,9 +205,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/goals/:id", async (req, res) => {
+  app.delete("/api/goals/:id", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const id = parseInt(req.params.id);
       const success = await storage.deleteGoal(userId, id);
       res.json({ success });
@@ -191,9 +218,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Workouts endpoints
-  app.get("/api/workouts", async (req, res) => {
+  app.get("/api/workouts", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const workouts = await storage.getWorkouts(userId);
       res.json(workouts);
     } catch (error) {
@@ -201,9 +229,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/workouts", async (req, res) => {
+  app.post("/api/workouts", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const workoutData = insertWorkoutSchema.parse(req.body);
       const workout = await storage.createWorkout(userId, workoutData);
       res.json(workout);
@@ -217,9 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Habit data endpoints
-  app.get("/api/habit-data", async (req, res) => {
+  app.get("/api/habit-data", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const goalId = req.query.goalId as string;
       const date = req.query.date as string;
       
@@ -238,9 +268,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/habit-data", async (req, res) => {
+  app.post("/api/habit-data", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const habitDataInput = insertHabitDataSchema.parse(req.body);
       const habitData = await storage.createOrUpdateHabitData(userId, habitDataInput);
       res.json(habitData);
@@ -254,9 +285,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Statistics endpoint
-  app.get("/api/statistics", async (req, res) => {
+  app.get("/api/statistics", requireAuth, async (req, res) => {
     try {
-      const userId = 1; // 固定ユーザーID
+      const user = req.user as any;
+      const userId = user.id;
       const goals = await storage.getGoals(userId);
       const habitData = await storage.getHabitData(userId);
       

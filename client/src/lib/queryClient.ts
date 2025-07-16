@@ -7,6 +7,18 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+export function getAuthToken(): string | null {
+  return localStorage.getItem("authToken");
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem("authToken", token);
+}
+
+export function removeAuthToken(): void {
+  localStorage.removeItem("authToken");
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -16,12 +28,20 @@ export async function apiRequest(
   
   console.log(`API Request: ${method} ${url}`, data);
   
+  const headers: HeadersInit = {
+    ...(data ? { "Content-Type": "application/json" } : {}),
+    ...(isDev ? { "Cache-Control": "no-cache" } : {}),
+  };
+  
+  // Add JWT token to headers if available
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
   const res = await fetch(url, {
     method,
-    headers: {
-      ...(data ? { "Content-Type": "application/json" } : {}),
-      ...(isDev ? { "Cache-Control": "no-cache" } : {}), // 開発環境では no-cache
-    },
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -38,7 +58,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers: HeadersInit = {};
+    
+    // Add JWT token to headers if available
+    const token = getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     const res = await fetch(queryKey.join("/") as string, {
+      headers,
       credentials: "include",
     });
 

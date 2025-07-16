@@ -9,18 +9,39 @@ import SettingsPage from "@/pages/settings";
 import GoalDetailPage from "@/pages/goal-detail";
 import AddGoalPage from "@/pages/add-goal";
 import RecordDetailPage from "@/pages/record-detail";
+import LoginPage from "@/pages/login";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+
+function ProtectedRoute({ component: Component, ...props }: any) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
+        <div className="text-gray-500">読み込み中...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return <Component {...props} />;
+}
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/add-goal" component={AddGoalPage} />
-      <Route path="/add-goal/workout" component={() => <AddGoalPage goalType="workout" />} />
-      <Route path="/add-goal/sleep" component={() => <AddGoalPage goalType="sleep" />} />
-      <Route path="/goal/:goalId/record/:recordId" component={RecordDetailPage} />
-      <Route path="/goal/:id" component={GoalDetailPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/" component={(props) => <ProtectedRoute component={Home} {...props} />} />
+      <Route path="/settings" component={(props) => <ProtectedRoute component={SettingsPage} {...props} />} />
+      <Route path="/add-goal" component={(props) => <ProtectedRoute component={AddGoalPage} {...props} />} />
+      <Route path="/add-goal/workout" component={(props) => <ProtectedRoute component={() => <AddGoalPage goalType="workout" />} {...props} />} />
+      <Route path="/add-goal/sleep" component={(props) => <ProtectedRoute component={() => <AddGoalPage goalType="sleep" />} {...props} />} />
+      <Route path="/goal/:goalId/record/:recordId" component={(props) => <ProtectedRoute component={RecordDetailPage} {...props} />} />
+      <Route path="/goal/:id" component={(props) => <ProtectedRoute component={GoalDetailPage} {...props} />} />
       <Route component={NotFound} />
     </Switch>
   );

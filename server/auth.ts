@@ -11,7 +11,7 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || "temporary-dev-secret-key-change-in-production";
 
 // Session configuration
 const PgSession = connectPgSimple(session);

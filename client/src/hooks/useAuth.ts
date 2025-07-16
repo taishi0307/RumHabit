@@ -1,20 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 
 export function useAuth() {
-  const hasToken = !!localStorage.getItem("auth_token");
-  
   const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5分間キャッシュ
-    enabled: hasToken, // Only fetch if token exists
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const isAuthenticated = !!user && !error;
 
   return {
     user,
-    isLoading: hasToken ? isLoading : false, // Not loading if no token
-    isAuthenticated: !!user,
+    isLoading,
+    isAuthenticated,
     error,
+  };
+}
+
+export function useRequireAuth() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (!isLoading && !isAuthenticated) {
+    window.location.href = "/login";
+  }
+
+  return {
+    user,
+    isLoading,
+    isAuthenticated,
   };
 }
