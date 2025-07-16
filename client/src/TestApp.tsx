@@ -1,14 +1,38 @@
-import React from "react";
-
 export default function TestApp() {
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-blue-800 mb-4">テストアプリ</h1>
-        <p className="text-blue-600 mb-8">React アプリケーションが正常に動作しています</p>
+    <div style={{ 
+      minHeight: "100vh", 
+      backgroundColor: "#dbeafe", 
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center" 
+    }}>
+      <div style={{ textAlign: "center" }}>
+        <h1 style={{ 
+          fontSize: "2rem", 
+          fontWeight: "bold", 
+          color: "#1e40af", 
+          marginBottom: "1rem" 
+        }}>
+          テストアプリ
+        </h1>
+        <p style={{ 
+          color: "#2563eb", 
+          marginBottom: "2rem" 
+        }}>
+          React アプリケーションが正常に動作しています
+        </p>
         <button 
           onClick={() => alert("ボタンが動作しています！")}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          style={{ 
+            padding: "12px 24px", 
+            backgroundColor: "#2563eb", 
+            color: "white", 
+            border: "none", 
+            borderRadius: "8px", 
+            cursor: "pointer",
+            fontSize: "16px"
+          }}
         >
           テストボタン
         </button>
