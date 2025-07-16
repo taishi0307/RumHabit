@@ -200,6 +200,12 @@ export function SmartWatchIntegration() {
         if (response.ok) {
           const { authUrl } = responseData;
           console.log('認証URL:', authUrl);
+          
+          // リダイレクトURIを抽出して表示
+          const redirectUri = new URL(authUrl).searchParams.get('redirect_uri');
+          console.log('🔗 リダイレクトURI:', redirectUri);
+          alert(`リダイレクトURI: ${redirectUri}`);
+          
           // 新しいタブでFitbit認証ページを開く
           window.open(authUrl, '_blank');
         } else {
