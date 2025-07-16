@@ -219,16 +219,16 @@ export default function Home() {
                           <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
                               let bgColor = 'bg-gray-100';
-                              let textColor = 'text-gray-400';
+                              let textColor = 'text-white';
                               
-                              if (day.isInRange) {
-                                bgColor = 'bg-gray-100';
+                              if (day.hasRecord && day.achieved) {
+                                bgColor = 'bg-green-500';
                                 textColor = 'text-white';
-                                
-                                if (day.hasRecord && day.achieved) {
-                                  bgColor = 'bg-green-500';
-                                  textColor = 'text-white';
-                                }
+                              }
+                              
+                              // Period outside range gets gray text
+                              if (!day.isInRange) {
+                                textColor = 'text-gray-400';
                               }
                               
                               return (
