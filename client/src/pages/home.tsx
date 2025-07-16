@@ -111,8 +111,11 @@ export default function Home() {
                   
                   // Get calendar data for recent 30 days (7x5 grid = 35 days)
                   const today = new Date();
+                  today.setHours(23, 59, 59, 999); // Set to end of today
+                  
                   const startDate = new Date(today);
                   startDate.setDate(today.getDate() - 29); // 30 days back
+                  startDate.setHours(0, 0, 0, 0); // Set to start of day
                   
                   // Find the start of the week for the grid
                   const startOfWeek = new Date(startDate);
@@ -124,6 +127,7 @@ export default function Home() {
                   for (let i = 0; i < 35; i++) {
                     const date = new Date(startOfWeek);
                     date.setDate(startOfWeek.getDate() + i);
+                    date.setHours(12, 0, 0, 0); // Set to noon for comparison
                     
                     // Format date to match data format (YYYY-MM-DD)
                     const year = date.getFullYear();
