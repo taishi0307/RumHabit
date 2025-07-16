@@ -44,6 +44,14 @@ export const habitData = pgTable("habit_data", {
 export const insertGoalSchema = createInsertSchema(goals).omit({
   id: true,
   createdAt: true,
+}).extend({
+  targetValue: z.number().nullable().optional(),
+  targetDistance: z.number().nullable().optional(),
+  targetTime: z.number().nullable().optional(),
+  targetHeartRate: z.number().nullable().optional(),
+  targetCalories: z.number().nullable().optional(),
+  targetSleepTime: z.number().nullable().optional(),
+  targetSleepScore: z.number().nullable().optional(),
 });
 
 export const insertWorkoutSchema = createInsertSchema(workouts).omit({

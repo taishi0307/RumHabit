@@ -143,16 +143,16 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
   };
 
   const onSubmit = (data: InsertGoal) => {
-    // Convert string values to numbers
+    // Convert string values to numbers, handling both strings and numbers
     const processedData = {
       ...data,
-      targetValue: data.targetValue ? Number(data.targetValue) : null,
-      targetDistance: data.targetDistance ? Number(data.targetDistance) : null,
-      targetTime: data.targetTime ? Number(data.targetTime) : null,
-      targetHeartRate: data.targetHeartRate ? Number(data.targetHeartRate) : null,
-      targetCalories: data.targetCalories ? Number(data.targetCalories) : null,
-      targetSleepTime: data.targetSleepTime ? Number(data.targetSleepTime) : null,
-      targetSleepScore: data.targetSleepScore ? Number(data.targetSleepScore) : null,
+      targetValue: data.targetValue ? (typeof data.targetValue === 'string' ? Number(data.targetValue) : data.targetValue) : null,
+      targetDistance: data.targetDistance ? (typeof data.targetDistance === 'string' ? Number(data.targetDistance) : data.targetDistance) : null,
+      targetTime: data.targetTime ? (typeof data.targetTime === 'string' ? Number(data.targetTime) : data.targetTime) : null,
+      targetHeartRate: data.targetHeartRate ? (typeof data.targetHeartRate === 'string' ? Number(data.targetHeartRate) : data.targetHeartRate) : null,
+      targetCalories: data.targetCalories ? (typeof data.targetCalories === 'string' ? Number(data.targetCalories) : data.targetCalories) : null,
+      targetSleepTime: data.targetSleepTime ? (typeof data.targetSleepTime === 'string' ? Number(data.targetSleepTime) : data.targetSleepTime) : null,
+      targetSleepScore: data.targetSleepScore ? (typeof data.targetSleepScore === 'string' ? Number(data.targetSleepScore) : data.targetSleepScore) : null,
     };
     createGoalMutation.mutate(processedData);
   };
@@ -251,6 +251,10 @@ export default function AddGoalPage({ goalType }: AddGoalPageProps) {
                             type="number" 
                             step={field.id === 'heart-rate' || field.id === 'calories' || field.id === 'score' ? '1' : '0.1'}
                             placeholder={`${field.name}を入力`}
+                            onChange={(e) => {
+                              const value = e.target.value === '' ? 0 : Number(e.target.value);
+                              formField.onChange(value);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
