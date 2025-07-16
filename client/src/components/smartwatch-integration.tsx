@@ -204,7 +204,10 @@ export function SmartWatchIntegration() {
           // リダイレクトURIを抽出して表示
           const redirectUri = new URL(authUrl).searchParams.get('redirect_uri');
           console.log('🔗 リダイレクトURI:', redirectUri);
-          alert(`リダイレクトURI: ${redirectUri}`);
+          
+          // より目立つ表示でリダイレクトURIを表示
+          const message = `Fitbit Developer Portalで設定すべきリダイレクトURI:\n\n${decodeURIComponent(redirectUri)}\n\n現在の設定: https://fitness-tracker-0307taishi.replit.app\n\n上記のリダイレクトURIをFitbit Developer Portalに設定してください。`;
+          alert(message);
           
           // 新しいタブでFitbit認証ページを開く
           window.open(authUrl, '_blank');
