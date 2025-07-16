@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, Settings } from "lucide-react";
+import { Target, Settings, Plus, Activity, Moon, Droplet } from "lucide-react";
 import { Link } from "wouter";
-import { StatisticsCard } from "@/components/statistics-card";
-import { CalendarView } from "@/components/calendar-view";
-import { WorkoutHistory } from "@/components/workout-history";
-import type { Goal, Workout, HabitData } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import type { Goal, HabitData } from "@shared/schema";
 
 interface Statistics {
   streak: number;
@@ -13,12 +14,8 @@ interface Statistics {
 }
 
 export default function Home() {
-  const { data: currentGoal } = useQuery<Goal>({
-    queryKey: ["/api/goals/current"],
-  });
-
-  const { data: workouts = [] } = useQuery<Workout[]>({
-    queryKey: ["/api/workouts"],
+  const { data: goals = [] } = useQuery<Goal[]>({
+    queryKey: ["/api/goals"],
   });
 
   const { data: habitData = [] } = useQuery<HabitData[]>({
@@ -29,56 +26,194 @@ export default function Home() {
     queryKey: ["/api/statistics"],
   });
 
+  // Group goals by category
+  const goalsByCategory = goals.reduce((acc, goal) => {
+    if (!acc[goal.category]) {
+      acc[goal.category] = [];
+    }
+    acc[goal.category].push(goal);
+    return acc;
+  }, {} as Record<string, Goal[]>);
+
+  // Calculate achievement rate for each goal
+  const getGoalAchievementRate = (goalId: number) => {
+    const goalHabitData = habitData.filter(data => data.goalId === goalId);
+    if (goalHabitData.length === 0) return 0;
+    const achievedCount = goalHabitData.filter(data => data.achieved).length;
+    return Math.round((achievedCount / goalHabitData.length) * 100);
+  };
+
+  // Get recent achievement for a goal
+  const getRecentAchievement = (goalId: number) => {
+    const goalHabitData = habitData.filter(data => data.goalId === goalId);
+    const sortedData = goalHabitData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return sortedData[0];
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'workout':
+        return <Activity className="h-5 w-5" />;
+      case 'sleep':
+        return <Moon className="h-5 w-5" />;
+      case 'hydration':
+        return <Droplet className="h-5 w-5" />;
+      default:
+        return <Target className="h-5 w-5" />;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'workout':
+        return 'bg-blue-500';
+      case 'sleep':
+        return 'bg-purple-500';
+      case 'hydration':
+        return 'bg-cyan-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'workout':
+        return 'ワークアウト';
+      case 'sleep':
+        return '睡眠';
+      case 'hydration':
+        return '水分補給';
+      default:
+        return category;
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+    <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <CheckCircle className="text-green-600" />
-            習慣トラッカー
+            <Target className="text-blue-600" />
+            目標管理
           </h1>
           <Link href="/settings">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-              <Settings size={20} />
+            <Button>
+              <Settings className="h-4 w-4 mr-2" />
               設定
-            </button>
+            </Button>
           </Link>
         </div>
       </div>
 
-      {/* Statistics */}
-      <StatisticsCard statistics={statistics} />
-
-      {/* Calendar */}
-      <CalendarView habitData={habitData} />
-
-      {/* Current Goals */}
-      {currentGoal && (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <i className="fas fa-target text-orange-600"></i>
-            現在の目標
-          </h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <div className="text-sm font-medium text-gray-700 mb-1">距離目標</div>
-              <div className="text-2xl font-bold text-blue-600">{currentGoal.distance} km</div>
+      {/* Statistics Overview */}
+      {statistics && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>統計情報</CardTitle>
+            <CardDescription>全体的な達成状況</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600">{statistics.streak}</div>
+                <div className="text-sm text-gray-600">連続達成日数</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">{statistics.totalWorkoutDays}</div>
+                <div className="text-sm text-gray-600">総活動日数</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600">{statistics.averageAchievementRate}%</div>
+                <div className="text-sm text-gray-600">平均達成率</div>
+              </div>
             </div>
-            <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-              <div className="text-sm font-medium text-gray-700 mb-1">心拍数目標</div>
-              <div className="text-2xl font-bold text-red-600">{currentGoal.heartRate} BPM</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-              <div className="text-sm font-medium text-gray-700 mb-1">時間目標</div>
-              <div className="text-2xl font-bold text-green-600">{currentGoal.duration} 分</div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Workout History */}
-      <WorkoutHistory workouts={workouts} currentGoal={currentGoal} />
+      {/* Goals by Category */}
+      <div className="space-y-6">
+        {Object.entries(goalsByCategory).map(([category, categoryGoals]) => (
+          <Card key={category}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg ${getCategoryColor(category)} text-white`}>
+                  {getCategoryIcon(category)}
+                </div>
+                {getCategoryName(category)}
+              </CardTitle>
+              <CardDescription>
+                {categoryGoals.length}個の目標
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categoryGoals.map((goal) => {
+                  const achievementRate = getGoalAchievementRate(goal.id);
+                  const recentAchievement = getRecentAchievement(goal.id);
+                  
+                  return (
+                    <div key={goal.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-gray-800">{goal.name}</h3>
+                        <Badge variant={goal.isActive ? "default" : "secondary"}>
+                          {goal.isActive ? "アクティブ" : "非アクティブ"}
+                        </Badge>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <div className="text-2xl font-bold text-gray-800">
+                          {goal.targetValue} {goal.unit}
+                        </div>
+                        <div className="text-sm text-gray-600">目標値</div>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-gray-600">達成率</span>
+                          <span className="text-sm font-medium">{achievementRate}%</span>
+                        </div>
+                        <Progress value={achievementRate} className="h-2" />
+                      </div>
+
+                      {recentAchievement && (
+                        <div className="text-xs text-gray-500">
+                          最新: {recentAchievement.actualValue} {goal.unit} ({recentAchievement.date})
+                          <Badge 
+                            variant={recentAchievement.achieved ? "default" : "secondary"}
+                            className="ml-2"
+                          >
+                            {recentAchievement.achieved ? "達成" : "未達成"}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {goals.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">目標が設定されていません</h3>
+            <p className="text-gray-600 mb-4">新しい目標を作成して習慣トラッキングを始めましょう。</p>
+            <Link href="/settings">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                目標を追加
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
