@@ -130,55 +130,54 @@ export default function GoalDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen" style={{ backgroundColor: 'hsl(0, 0%, 97.6%)' }}>
+      {/* Back Button */}
+      <div className="mb-4">
+        <Link href="/">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            戻る
+          </Button>
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">{goal.name}</h1>
-              <div className="text-gray-600 mt-1">
-                {goal.category === 'workout' && goal.type === 'workout' && (
-                  <div className="flex flex-wrap gap-4">
-                    {goal.targetDistance && (
-                      <span>距離: {goal.targetDistance}km</span>
-                    )}
-                    {goal.targetTime && (
-                      <span>時間: {goal.targetTime}分</span>
-                    )}
-                    {goal.targetHeartRate && (
-                      <span>心拍数: {goal.targetHeartRate}bpm</span>
-                    )}
-                    {goal.targetCalories && (
-                      <span>カロリー: {goal.targetCalories}kcal</span>
-                    )}
-                  </div>
-                )}
-                {goal.category === 'sleep' && goal.type === 'sleep' && (
-                  <div className="flex flex-wrap gap-4">
-                    {goal.targetSleepTime && (
-                      <span>睡眠時間: {goal.targetSleepTime}時間</span>
-                    )}
-                    {goal.targetSleepScore && (
-                      <span>睡眠スコア: {goal.targetSleepScore}点</span>
-                    )}
-                  </div>
-                )}
-                {goal.targetValue && (
-                  <span>目標: {goal.targetValue} {goal.unit}</span>
-                )}
-              </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">{goal.name}</h1>
+            <div className="text-gray-600 mt-1">
+              {goal.category === 'workout' && goal.type === 'workout' && (
+                <div className="flex flex-wrap gap-4">
+                  {goal.targetDistance && (
+                    <span>距離: {goal.targetDistance}km</span>
+                  )}
+                  {goal.targetTime && (
+                    <span>時間: {goal.targetTime}分</span>
+                  )}
+                  {goal.targetHeartRate && (
+                    <span>心拍数: {goal.targetHeartRate}bpm</span>
+                  )}
+                  {goal.targetCalories && (
+                    <span>カロリー: {goal.targetCalories}kcal</span>
+                  )}
+                </div>
+              )}
+              {goal.category === 'sleep' && goal.type === 'sleep' && (
+                <div className="flex flex-wrap gap-4">
+                  {goal.targetSleepTime && (
+                    <span>睡眠時間: {goal.targetSleepTime}時間</span>
+                  )}
+                  {goal.targetSleepScore && (
+                    <span>睡眠スコア: {goal.targetSleepScore}点</span>
+                  )}
+                </div>
+              )}
+              {goal.targetValue && (
+                <span>目標: {goal.targetValue} {goal.unit}</span>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={goal.isActive ? "default" : "secondary"}>
-              {goal.isActive ? "アクティブ" : "非アクティブ"}
-            </Badge>
+          <div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm">
