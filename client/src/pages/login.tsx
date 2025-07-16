@@ -46,6 +46,7 @@ export default function LoginPage() {
       password: "",
       confirmPassword: "",
     },
+    mode: "onChange",
   });
 
   // Debug form state
@@ -193,100 +194,99 @@ export default function LoginPage() {
               </form>
             </Form>
           ) : (
-            <Form {...registrationForm}>
-              <form onSubmit={registrationForm.handleSubmit(handleRegister)} className="space-y-4">
-                <FormField
-                  control={registrationForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>メールアドレス</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="メールアドレスを入力"
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                          disabled={field.disabled}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reg-email">メールアドレス</Label>
+                <Input
+                  id="reg-email"
+                  type="email"
+                  placeholder="メールアドレスを入力"
+                  value={registrationForm.watch("email")}
+                  onChange={(e) => registrationForm.setValue("email", e.target.value)}
                 />
-                <FormField
-                  control={registrationForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>パスワード</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type={showPassword ? "text" : "password"}
-                            placeholder="パスワードを入力"
-                            value={field.value || ""}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                            disabled={field.disabled}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={registrationForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>パスワード確認</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="パスワードを再入力"
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          >
-                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={registrationMutation.isPending}
-                >
-                  {registrationMutation.isPending ? "作成中..." : "アカウント作成"}
-                </Button>
-              </form>
-            </Form>
+                {registrationForm.formState.errors.email && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {registrationForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="reg-password">パスワード</Label>
+                <div className="relative">
+                  <Input
+                    id="reg-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="パスワードを入力"
+                    value={registrationForm.watch("password")}
+                    onChange={(e) => registrationForm.setValue("password", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {registrationForm.formState.errors.password && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {registrationForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="reg-confirm-password">パスワード確認</Label>
+                <div className="relative">
+                  <Input
+                    id="reg-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="パスワードを再入力"
+                    value={registrationForm.watch("confirmPassword")}
+                    onChange={(e) => registrationForm.setValue("confirmPassword", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {registrationForm.formState.errors.confirmPassword && (
+                  <p className="text-sm text-red-500 mt-1">
+                    {registrationForm.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+              
+              <Button 
+                type="button"
+                className="w-full"
+                disabled={registrationMutation.isPending}
+                onClick={async () => {
+                  const formData = registrationForm.getValues();
+                  const validation = registrationSchema.safeParse(formData);
+                  
+                  if (!validation.success) {
+                    validation.error.errors.forEach((error) => {
+                      registrationForm.setError(error.path[0] as keyof RegistrationData, {
+                        message: error.message,
+                      });
+                    });
+                    return;
+                  }
+                  
+                  handleRegister(formData);
+                }}
+              >
+                {registrationMutation.isPending ? "作成中..." : "アカウント作成"}
+              </Button>
+            </div>
           )}
           
           <div className="relative">
