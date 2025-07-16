@@ -13,10 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, setAuthToken } from "@/lib/queryClient";
 import { loginSchema, insertUserSchema } from "@shared/schema";
 
-const registrationSchema = insertUserSchema.omit({
-  firstName: true,
-  lastName: true,
-}).extend({
+const registrationSchema = z.object({
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
   confirmPassword: z.string().min(8, "パスワードは8文字以上で入力してください"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "パスワードが一致しません",
@@ -75,7 +74,9 @@ export default function LoginPage() {
 
   const registrationMutation = useMutation({
     mutationFn: async (data: RegistrationData) => {
-      const response = await apiRequest("POST", "/api/auth/register", data);
+      // Remove confirmPassword from the data sent to the server
+      const { confirmPassword, ...registrationData } = data;
+      const response = await apiRequest("POST", "/api/auth/register", registrationData);
       return response.json();
     },
     onSuccess: (data) => {
@@ -96,6 +97,7 @@ export default function LoginPage() {
       }
     },
     onError: (error) => {
+      console.error("Registration error:", error);
       toast({
         title: "登録に失敗しました",
         description: "入力内容を確認してもう一度お試しください",

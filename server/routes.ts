@@ -21,13 +21,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const { email, password } = req.body;
+      
+      // Basic validation
+      if (!email || !password) {
+        return res.status(400).json({ error: "メールアドレスとパスワードは必須です" });
+      }
+      
+      if (password.length < 8) {
+        return res.status(400).json({ error: "パスワードは8文字以上で入力してください" });
+      }
       
       // Check if user already exists
-      const existingUser = await findUserByEmail(userData.email);
+      const existingUser = await findUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ error: "このメールアドレスは既に登録されています" });
       }
+
+      const userData = {
+        email,
+        password,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: null,
+      };
 
       const user = await createUser(userData);
       const token = generateToken(user.id);
@@ -43,11 +60,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         token,
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "入力データが無効です", details: error.errors });
-      } else {
-        res.status(500).json({ error: "ユーザー登録に失敗しました" });
-      }
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "ユーザー登録に失敗しました" });
     }
   });
 
