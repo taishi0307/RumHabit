@@ -154,21 +154,31 @@ export default function Home() {
                   const achievementRate = getGoalAchievementRate(goal.id);
                   const recentAchievement = getRecentAchievement(goal.id);
                   
-                  // Get recent 30 days of data for mini calendar
-                  const recentDays = 30;
+                  // Get calendar data for current month (7x5 grid)
                   const today = new Date();
+                  const currentMonth = today.getMonth();
+                  const currentYear = today.getFullYear();
+                  const firstDay = new Date(currentYear, currentMonth, 1);
+                  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                  const startOfWeek = new Date(firstDay);
+                  startOfWeek.setDate(firstDay.getDate() - firstDay.getDay());
+                  
                   const miniCalendarData = [];
                   
-                  for (let i = recentDays - 1; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
+                  // Generate 35 days (7x5 grid)
+                  for (let i = 0; i < 35; i++) {
+                    const date = new Date(startOfWeek);
+                    date.setDate(startOfWeek.getDate() + i);
                     const dateStr = date.toISOString().split('T')[0];
                     const record = habitData.find(data => data.goalId === goal.id && data.date === dateStr);
+                    const isCurrentMonth = date.getMonth() === currentMonth;
                     
                     miniCalendarData.push({
                       date: dateStr,
+                      day: date.getDate(),
                       achieved: record?.achieved || false,
                       hasRecord: !!record,
+                      isCurrentMonth: isCurrentMonth,
                     });
                   }
                   
@@ -197,22 +207,32 @@ export default function Home() {
                           <Progress value={achievementRate} className="h-2" />
                         </div>
 
-                        {/* Mini Calendar Dots */}
+                        {/* Mini Calendar Grid */}
                         <div className="mb-3">
-                          <div className="text-xs text-gray-600 mb-1">最近30日間</div>
-                          <div className="flex gap-0.5 flex-wrap">
+                          <div className="text-xs text-gray-600 mb-2">今月の記録</div>
+                          <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
-                              let dotColor = 'bg-gray-200';
-                              if (day.hasRecord) {
-                                dotColor = day.achieved ? 'bg-green-500' : 'bg-red-500';
+                              let bgColor = 'bg-gray-100';
+                              let textColor = 'text-gray-400';
+                              
+                              if (day.isCurrentMonth) {
+                                bgColor = 'bg-white';
+                                textColor = 'text-gray-700';
+                                
+                                if (day.hasRecord && day.achieved) {
+                                  bgColor = 'bg-green-500';
+                                  textColor = 'text-white';
+                                }
                               }
                               
                               return (
                                 <div
                                   key={index}
-                                  className={`w-2 h-2 rounded-full ${dotColor}`}
+                                  className={`${bgColor} ${textColor} aspect-square flex items-center justify-center text-xs font-medium`}
                                   title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '未達成') : '記録なし'}`}
-                                />
+                                >
+                                  {day.day}
+                                </div>
                               );
                             })}
                           </div>
