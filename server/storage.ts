@@ -48,51 +48,33 @@ export class MemStorage implements IStorage {
     const defaultGoals: Goal[] = [
       {
         id: 1,
-        type: 'workout-distance',
-        name: '距離目標',
-        targetValue: 5.0,
-        unit: 'km',
+        type: 'workout',
+        name: 'ランニング目標',
+        targetValue: null,
+        unit: null,
         category: 'workout',
+        targetDistance: 5.0,
+        targetTime: 30,
+        targetHeartRate: 150,
+        targetCalories: 300,
+        targetSleepTime: null,
+        targetSleepScore: null,
         isActive: true,
         createdAt: new Date(),
       },
       {
         id: 2,
-        type: 'workout-heart-rate',
-        name: '心拍数目標',
-        targetValue: 150,
-        unit: 'bpm',
-        category: 'workout',
-        isActive: true,
-        createdAt: new Date(),
-      },
-      {
-        id: 3,
-        type: 'workout-duration',
-        name: '運動時間目標',
-        targetValue: 30,
-        unit: 'minutes',
-        category: 'workout',
-        isActive: true,
-        createdAt: new Date(),
-      },
-      {
-        id: 4,
-        type: 'sleep-time',
-        name: '睡眠時間目標',
-        targetValue: 8,
-        unit: 'hours',
+        type: 'sleep',
+        name: '睡眠目標',
+        targetValue: null,
+        unit: null,
         category: 'sleep',
-        isActive: true,
-        createdAt: new Date(),
-      },
-      {
-        id: 5,
-        type: 'sleep-score',
-        name: '睡眠スコア目標',
-        targetValue: 85,
-        unit: 'score',
-        category: 'sleep',
+        targetDistance: null,
+        targetTime: null,
+        targetHeartRate: null,
+        targetCalories: null,
+        targetSleepTime: 8,
+        targetSleepScore: 85,
         isActive: true,
         createdAt: new Date(),
       },
@@ -101,7 +83,7 @@ export class MemStorage implements IStorage {
     defaultGoals.forEach(goal => {
       this.goals.set(goal.id, goal);
     });
-    this.currentGoalId = 6;
+    this.currentGoalId = 3;
   }
 
   private initializeSampleData() {
@@ -172,19 +154,19 @@ export class MemStorage implements IStorage {
       const sleepTimeHabit: HabitData = {
         id: this.currentHabitDataId++,
         date: date,
-        goalId: 4,
+        goalId: 2,
         achieved: sleepTime >= 8,
         actualValue: sleepTime,
         workoutId: null,
       };
       this.habitDataList.push(sleepTimeHabit);
 
-      // Sleep score goal (id: 5)
+      // Sleep score goal (id: 2)
       const sleepScore = 70 + Math.random() * 25; // 70 to 95
       const sleepScoreHabit: HabitData = {
         id: this.currentHabitDataId++,
         date: date,
-        goalId: 5,
+        goalId: 2,
         achieved: sleepScore >= 85,
         actualValue: sleepScore,
         workoutId: null,
@@ -205,6 +187,14 @@ export class MemStorage implements IStorage {
     const newGoal: Goal = {
       id: this.currentGoalId++,
       ...goal,
+      targetValue: goal.targetValue || null,
+      unit: goal.unit || null,
+      targetDistance: goal.targetDistance || null,
+      targetTime: goal.targetTime || null,
+      targetHeartRate: goal.targetHeartRate || null,
+      targetCalories: goal.targetCalories || null,
+      targetSleepTime: goal.targetSleepTime || null,
+      targetSleepScore: goal.targetSleepScore || null,
       isActive: goal.isActive ?? true,
       createdAt: new Date(),
     };

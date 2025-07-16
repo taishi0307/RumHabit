@@ -55,9 +55,15 @@ export default function AddGoalPage() {
     defaultValues: {
       name: "",
       type: "",
-      targetValue: "",
+      targetValue: 0,
       unit: "",
       category: "",
+      targetDistance: 0,
+      targetTime: 0,
+      targetHeartRate: 0,
+      targetCalories: 0,
+      targetSleepTime: 0,
+      targetSleepScore: 0,
       isActive: true
     }
   });

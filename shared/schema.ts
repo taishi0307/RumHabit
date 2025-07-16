@@ -4,11 +4,19 @@ import { z } from "zod";
 
 export const goals = pgTable("goals", {
   id: serial("id").primaryKey(),
-  type: text("type").notNull(), // 'workout-distance', 'workout-heart-rate', 'workout-duration', 'sleep-time', 'sleep-score', 'hydration', etc.
+  type: text("type").notNull(), // 'workout', 'sleep', 'hydration', etc.
   name: text("name").notNull(),
-  targetValue: real("target_value").notNull(),
-  unit: text("unit").notNull(), // 'km', 'bpm', 'minutes', 'hours', 'ml', 'score'
+  targetValue: real("target_value"), // For single value goals
+  unit: text("unit"), // For single value goals
   category: text("category").notNull(), // 'workout', 'sleep', 'hydration', etc.
+  // Multiple value fields for workout goals
+  targetDistance: real("target_distance"),
+  targetTime: real("target_time"),
+  targetHeartRate: real("target_heart_rate"),
+  targetCalories: real("target_calories"),
+  // Multiple value fields for sleep goals
+  targetSleepTime: real("target_sleep_time"),
+  targetSleepScore: real("target_sleep_score"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
