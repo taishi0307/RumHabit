@@ -130,7 +130,18 @@ export default function AddGoalPage() {
   };
 
   const onSubmit = (data: InsertGoal) => {
-    createGoalMutation.mutate(data);
+    // Convert string values to numbers
+    const processedData = {
+      ...data,
+      targetValue: data.targetValue ? Number(data.targetValue) : null,
+      targetDistance: data.targetDistance ? Number(data.targetDistance) : null,
+      targetTime: data.targetTime ? Number(data.targetTime) : null,
+      targetHeartRate: data.targetHeartRate ? Number(data.targetHeartRate) : null,
+      targetCalories: data.targetCalories ? Number(data.targetCalories) : null,
+      targetSleepTime: data.targetSleepTime ? Number(data.targetSleepTime) : null,
+      targetSleepScore: data.targetSleepScore ? Number(data.targetSleepScore) : null,
+    };
+    createGoalMutation.mutate(processedData);
   };
 
   return (
@@ -225,7 +236,7 @@ export default function AddGoalPage() {
                           <Input 
                             {...formField}
                             type="number" 
-                            step="0.1" 
+                            step={field.id === 'heart-rate' || field.id === 'calories' || field.id === 'score' ? '1' : '0.1'}
                             placeholder={`${field.name}を入力`}
                           />
                         </FormControl>
