@@ -22,7 +22,7 @@ import {
 interface SmartWatchDevice {
   id: string;
   name: string;
-  brand: 'Apple' | 'Huawei' | 'Xiaomi' | 'Garmin' | 'Google';
+  brand: 'Apple' | 'Huawei' | 'Xiaomi' | 'Garmin' | 'Google' | 'Fitbit';
   connected: boolean;
   lastSync: Date | null;
   supportedMetrics: string[];
@@ -44,6 +44,36 @@ interface WorkoutData {
 
 export function SmartWatchIntegration() {
   const [connectedDevices, setConnectedDevices] = useState<SmartWatchDevice[]>([]);
+
+  // URLパラメータをチェックしてFitbit認証成功を処理
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fitbitConnected = urlParams.get('fitbit_connected');
+    const accessToken = urlParams.get('access_token');
+    
+    if (fitbitConnected === 'true' && accessToken) {
+      // アクセストークンを保存
+      localStorage.setItem('fitbit_access_token', accessToken);
+      
+      // Fitbitデバイスを接続済みに移動
+      const fitbitDevice = availableDevices.find(d => d.brand === 'Fitbit');
+      if (fitbitDevice) {
+        const connectedDevice = {
+          ...fitbitDevice,
+          connected: true,
+          lastSync: new Date()
+        };
+        setConnectedDevices(prev => [...prev, connectedDevice]);
+        setAvailableDevices(prev => prev.filter(d => d.brand !== 'Fitbit'));
+        
+        // URLパラメータをクリア
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // 成功メッセージを表示
+        alert('Fitbitの接続が完了しました！データ同期を開始できます。');
+      }
+    }
+  }, []);
   const [availableDevices, setAvailableDevices] = useState<SmartWatchDevice[]>([
     {
       id: 'apple-watch',
@@ -98,6 +128,15 @@ export function SmartWatchIntegration() {
       lastSync: null,
       supportedMetrics: ['heart_rate', 'distance', 'calories', 'steps', 'workout_sessions', 'sleep_tracking'],
       apiStatus: 'available'
+    },
+    {
+      id: 'fitbit-device',
+      name: 'Fitbit',
+      brand: 'Fitbit',
+      connected: false,
+      lastSync: null,
+      supportedMetrics: ['heart_rate', 'distance', 'calories', 'steps', 'workout_sessions', 'sleep_tracking', 'activity_logs'],
+      apiStatus: 'available'
     }
   ]);
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -110,6 +149,7 @@ export function SmartWatchIntegration() {
       case 'Xiaomi': return 'bg-orange-500 text-white';
       case 'Garmin': return 'bg-blue-600 text-white';
       case 'Google': return 'bg-green-600 text-white';
+      case 'Fitbit': return 'bg-teal-600 text-white';
       default: return 'bg-gray-500 text-white';
     }
   };
@@ -139,25 +179,45 @@ export function SmartWatchIntegration() {
     setSyncProgress(0);
     
     try {
-      // シミュレーション：実際の接続処理
-      for (let i = 0; i <= 100; i += 10) {
-        setSyncProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      
-      // デバイスを接続済みに移動
       const device = availableDevices.find(d => d.id === deviceId);
-      if (device) {
-        const connectedDevice = {
-          ...device,
-          connected: true,
-          lastSync: new Date()
-        };
-        setConnectedDevices(prev => [...prev, connectedDevice]);
-        setAvailableDevices(prev => prev.filter(d => d.id !== deviceId));
+      
+      if (device?.brand === 'Fitbit') {
+        // Fitbitの認証URL取得
+        const response = await fetch('/api/smartwatch/fitbit/auth-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (response.ok) {
+          const { authUrl } = await response.json();
+          // 新しいタブでFitbit認証ページを開く
+          window.open(authUrl, '_blank');
+        } else {
+          throw new Error('Fitbit認証URLの取得に失敗しました');
+        }
+      } else {
+        // 他のデバイスのシミュレーション
+        for (let i = 0; i <= 100; i += 10) {
+          setSyncProgress(i);
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        // デバイスを接続済みに移動
+        if (device) {
+          const connectedDevice = {
+            ...device,
+            connected: true,
+            lastSync: new Date()
+          };
+          setConnectedDevices(prev => [...prev, connectedDevice]);
+          setAvailableDevices(prev => prev.filter(d => d.id !== deviceId));
+        }
       }
     } catch (error) {
       console.error('接続エラー:', error);
+      alert('デバイスの接続に失敗しました');
     } finally {
       setIsConnecting(null);
       setSyncProgress(0);
@@ -182,20 +242,69 @@ export function SmartWatchIntegration() {
     setSyncProgress(0);
     
     try {
-      // シミュレーション：データ同期処理
-      for (let i = 0; i <= 100; i += 20) {
-        setSyncProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 300));
+      const device = connectedDevices.find(d => d.id === deviceId);
+      
+      if (device?.brand === 'Fitbit') {
+        // 実際のFitbitデータ同期
+        setSyncProgress(20);
+        
+        // 過去30日間のデータを取得
+        const endDate = new Date();
+        const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+        
+        const dateRange = {
+          start: startDate.toISOString().split('T')[0],
+          end: endDate.toISOString().split('T')[0]
+        };
+        
+        // アクセストークンを取得（実際にはlocalStorageなどに保存）
+        const accessToken = localStorage.getItem('fitbit_access_token');
+        
+        if (!accessToken) {
+          throw new Error('Fitbitアクセストークンが見つかりません');
+        }
+        
+        setSyncProgress(50);
+        
+        const response = await fetch(`/api/smartwatch/sync/Fitbit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accessToken,
+            dateRange
+          })
+        });
+        
+        setSyncProgress(80);
+        
+        if (!response.ok) {
+          throw new Error('Fitbitデータの同期に失敗しました');
+        }
+        
+        const syncResult = await response.json();
+        setSyncProgress(100);
+        
+        console.log('同期されたワークアウト:', syncResult.workouts);
+        alert(`${syncResult.workoutCount}件のワークアウトデータを同期しました`);
+      } else {
+        // 他のデバイスのシミュレーション
+        for (let i = 0; i <= 100; i += 20) {
+          setSyncProgress(i);
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
       }
       
       // 最終同期時刻を更新
-      setConnectedDevices(prev => prev.map(device => 
-        device.id === deviceId 
-          ? { ...device, lastSync: new Date() }
-          : device
+      setConnectedDevices(prev => prev.map(d => 
+        d.id === deviceId 
+          ? { ...d, lastSync: new Date() }
+          : d
       ));
     } catch (error) {
       console.error('同期エラー:', error);
+      alert(`データ同期エラー: ${error.message}`);
     } finally {
       setIsConnecting(null);
       setSyncProgress(0);

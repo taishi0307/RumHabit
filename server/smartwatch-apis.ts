@@ -220,6 +220,140 @@ export class GoogleFitAPI implements SmartWatchAPI {
   }
 }
 
+export class FitbitAPI implements SmartWatchAPI {
+  brand = 'Fitbit';
+  private baseUrl = 'https://api.fitbit.com';
+  private authUrl = 'https://www.fitbit.com/oauth2/authorize';
+  private tokenUrl = 'https://api.fitbit.com/oauth2/token';
+
+  async authenticate(credentials: { 
+    clientId: string; 
+    clientSecret: string; 
+    redirectUri: string; 
+    code?: string; 
+  }): Promise<string> {
+    if (!credentials.code) {
+      // Step 1: Generate authorization URL
+      const params = new URLSearchParams({
+        client_id: credentials.clientId,
+        response_type: 'code',
+        scope: 'activity heartrate location profile',
+        redirect_uri: credentials.redirectUri,
+        expires_in: '604800' // 7 days
+      });
+      
+      return `${this.authUrl}?${params.toString()}`;
+    }
+
+    // Step 2: Exchange code for tokens
+    const tokenBody = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: credentials.code,
+      redirect_uri: credentials.redirectUri,
+      client_id: credentials.clientId
+    });
+
+    const authHeader = btoa(`${credentials.clientId}:${credentials.clientSecret}`);
+    
+    const response = await fetch(this.tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: tokenBody
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fitbit auth failed: ${response.status}`);
+    }
+
+    const tokenData = await response.json();
+    return tokenData.access_token;
+  }
+
+  async getWorkoutData(accessToken: string, dateRange: { start: string; end: string }): Promise<WorkoutData[]> {
+    const workouts: WorkoutData[] = [];
+    
+    // Get activity logs for the date range
+    const activitiesResponse = await fetch(
+      `${this.baseUrl}/1/user/-/activities/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    if (!activitiesResponse.ok) {
+      throw new Error(`Failed to fetch Fitbit activities: ${activitiesResponse.status}`);
+    }
+
+    const activitiesData = await activitiesResponse.json();
+    
+    // Transform Fitbit activities to WorkoutData format
+    for (const activity of activitiesData.activities || []) {
+      const workout: WorkoutData = {
+        id: activity.logId.toString(),
+        date: activity.startDate,
+        time: activity.startTime,
+        duration: Math.round(activity.duration / 1000), // Convert ms to seconds
+        distance: activity.distance || 0,
+        heartRate: activity.averageHeartRate || 0,
+        calories: activity.calories || 0,
+        activityType: activity.activityName,
+        deviceId: 'fitbit',
+        rawData: activity
+      };
+      
+      workouts.push(workout);
+    }
+
+    return workouts;
+  }
+
+  async getDailyStats(accessToken: string, date: string): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/1/user/-/activities/date/${date}.json`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Fitbit daily stats: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async getHeartRateData(accessToken: string, date: string): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/1/user/-/activities/heart/date/${date}/1d.json`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Fitbit heart rate: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  isAvailable(): boolean {
+    return true;
+  }
+}
+
 // スマートウォッチAPIマネージャー
 export class SmartWatchAPIManager {
   private apis: SmartWatchAPI[] = [
@@ -228,6 +362,7 @@ export class SmartWatchAPIManager {
     new XiaomiMiFitnessAPI(),
     new GarminConnectAPI(),
     new GoogleFitAPI(),
+    new FitbitAPI(),
   ];
   
   getAvailableAPIs(): SmartWatchAPI[] {
@@ -295,6 +430,61 @@ export const smartWatchRoutes = (app: any) => {
         workoutCount: workoutData.length,
         workouts: workoutData,
       });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Fitbit OAuth認証コールバック
+  app.get('/api/smartwatch/fitbit/callback', async (req: Request, res: Response) => {
+    try {
+      const { code, state } = req.query;
+      
+      if (!code) {
+        return res.status(400).json({ error: 'Authorization code is required' });
+      }
+
+      const clientId = process.env.FITBIT_CLIENT_ID;
+      const clientSecret = process.env.FITBIT_CLIENT_SECRET;
+      const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({ error: 'Fitbit credentials not configured' });
+      }
+
+      const fitbitApi = new FitbitAPI();
+      const accessToken = await fitbitApi.authenticate({
+        clientId,
+        clientSecret,
+        redirectUri,
+        code: code as string
+      });
+
+      // 認証成功時のリダイレクト
+      res.redirect(`/settings?fitbit_connected=true&access_token=${accessToken}`);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Fitbit認証URL生成
+  app.post('/api/smartwatch/fitbit/auth-url', async (req: Request, res: Response) => {
+    try {
+      const clientId = process.env.FITBIT_CLIENT_ID;
+      const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
+
+      if (!clientId) {
+        return res.status(500).json({ error: 'Fitbit client ID not configured' });
+      }
+
+      const fitbitApi = new FitbitAPI();
+      const authUrl = await fitbitApi.authenticate({
+        clientId,
+        clientSecret: '', // Not needed for URL generation
+        redirectUri,
+      });
+
+      res.json({ authUrl });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
