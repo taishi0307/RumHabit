@@ -288,8 +288,10 @@ export function SmartWatchIntegration() {
         // アクセストークンを取得（実際にはlocalStorageなどに保存）
         const accessToken = localStorage.getItem('fitbit_access_token');
         
+        console.log('Fitbit access token:', accessToken ? `Token exists (${accessToken.substring(0, 20)}...)` : 'Token not found');
+        
         if (!accessToken) {
-          throw new Error('Fitbitアクセストークンが見つかりません');
+          throw new Error('Fitbitアクセストークンが見つかりません。設定からFitbitデバイスを再接続してください。');
         }
         
         setSyncProgress(50);

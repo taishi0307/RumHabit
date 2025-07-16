@@ -301,46 +301,8 @@ export class FitbitAPI implements SmartWatchAPI {
       console.log('Fitbit API response:', responseText);
 
       if (!activitiesResponse.ok) {
-        // トークンが無効な場合、サンプルデータを返す
-        if (activitiesResponse.status === 401) {
-          console.log('Token invalid, returning sample data');
-          return [
-            {
-              id: 'fitbit-sample-1',
-              date: '2025-07-16',
-              time: '07:30:00',
-              duration: 1800,
-              distance: 4.2,
-              heartRate: 145,
-              calories: 280,
-              activityType: 'Running',
-              deviceId: 'fitbit'
-            },
-            {
-              id: 'fitbit-sample-2',
-              date: '2025-07-15',
-              time: '18:15:00',
-              duration: 2100,
-              distance: 5.8,
-              heartRate: 152,
-              calories: 350,
-              activityType: 'Running',
-              deviceId: 'fitbit'
-            },
-            {
-              id: 'fitbit-sample-3',
-              date: '2025-07-14',
-              time: '06:45:00',
-              duration: 1650,
-              distance: 3.9,
-              heartRate: 140,
-              calories: 245,
-              activityType: 'Walking',
-              deviceId: 'fitbit'
-            }
-          ];
-        }
-        throw new Error(`Failed to fetch Fitbit activities: ${activitiesResponse.status}`);
+        console.log('Fitbit API Error:', activitiesResponse.status, responseText);
+        throw new Error(`Failed to fetch Fitbit activities: ${activitiesResponse.status} - ${responseText}`);
       }
 
       const activitiesData = JSON.parse(responseText);
