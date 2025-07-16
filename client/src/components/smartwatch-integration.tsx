@@ -45,17 +45,11 @@ interface WorkoutData {
 export function SmartWatchIntegration() {
   const [connectedDevices, setConnectedDevices] = useState<SmartWatchDevice[]>([]);
 
-  // URLパラメータをチェックしてFitbit認証成功を処理
+  // コンポーネント初期化時にFitbitの接続状態を復元
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const fitbitConnected = urlParams.get('fitbit_connected');
-    const accessToken = urlParams.get('access_token');
-    
-    if (fitbitConnected === 'true' && accessToken) {
-      // アクセストークンを保存
-      localStorage.setItem('fitbit_access_token', accessToken);
-      
-      // Fitbitデバイスを接続済みに移動
+    const accessToken = localStorage.getItem('fitbit_access_token');
+    if (accessToken) {
+      // Fitbitデバイスを接続済みに設定
       const fitbitDevice = availableDevices.find(d => d.brand === 'Fitbit');
       if (fitbitDevice) {
         const connectedDevice = {
@@ -63,15 +57,31 @@ export function SmartWatchIntegration() {
           connected: true,
           lastSync: new Date()
         };
-        setConnectedDevices(prev => [...prev, connectedDevice]);
+        setConnectedDevices(prev => {
+          const existing = prev.find(d => d.brand === 'Fitbit');
+          if (!existing) {
+            return [...prev, connectedDevice];
+          }
+          return prev;
+        });
         setAvailableDevices(prev => prev.filter(d => d.brand !== 'Fitbit'));
-        
-        // URLパラメータをクリア
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // 成功メッセージを表示
-        alert('Fitbitの接続が完了しました！データ同期を開始できます。');
       }
+    }
+
+    // URLパラメータをチェックしてFitbit認証成功を処理
+    const urlParams = new URLSearchParams(window.location.search);
+    const fitbitConnected = urlParams.get('fitbit_connected');
+    const urlAccessToken = urlParams.get('access_token');
+    
+    if (fitbitConnected === 'true' && urlAccessToken) {
+      // アクセストークンを保存
+      localStorage.setItem('fitbit_access_token', urlAccessToken);
+      
+      // URLパラメータをクリア
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // 成功メッセージを表示
+      alert('Fitbitの接続が完了しました！データ同期を開始できます。');
     }
   }, []);
   const [availableDevices, setAvailableDevices] = useState<SmartWatchDevice[]>([
@@ -305,6 +315,7 @@ export function SmartWatchIntegration() {
         setSyncProgress(100);
         
         console.log('同期されたワークアウト:', syncResult.workouts);
+        console.log('同期結果の詳細:', syncResult);
         alert(`${syncResult.workoutCount}件のワークアウトデータを同期しました`);
       } else {
         // 他のデバイスのシミュレーション
