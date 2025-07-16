@@ -182,6 +182,9 @@ export function SmartWatchIntegration() {
       const device = availableDevices.find(d => d.id === deviceId);
       
       if (device?.brand === 'Fitbit') {
+        console.log('Fitbit接続を開始します...');
+        console.log('現在のURL:', window.location.href);
+        
         // Fitbitの認証URL取得
         const response = await fetch('/api/smartwatch/fitbit/auth-url', {
           method: 'POST',
@@ -190,11 +193,17 @@ export function SmartWatchIntegration() {
           },
         });
         
+        console.log('認証URLレスポンス:', response.status);
+        const responseData = await response.json();
+        console.log('認証URLデータ:', responseData);
+        
         if (response.ok) {
-          const { authUrl } = await response.json();
+          const { authUrl } = responseData;
+          console.log('認証URL:', authUrl);
           // 新しいタブでFitbit認証ページを開く
           window.open(authUrl, '_blank');
         } else {
+          console.error('認証URLエラー:', responseData);
           throw new Error('Fitbit認証URLの取得に失敗しました');
         }
       } else {
