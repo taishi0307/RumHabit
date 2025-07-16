@@ -239,7 +239,7 @@ export default function Home() {
             <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-800 mb-2">目標が設定されていません</h3>
             <p className="text-gray-600 mb-4">新しい目標を作成して習慣トラッキングを始めましょう。</p>
-            <Link href="/settings">
+            <Link href="/add-goal">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 目標を追加
