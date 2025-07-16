@@ -238,8 +238,7 @@ export class FitbitAPI implements SmartWatchAPI {
         client_id: credentials.clientId,
         response_type: 'code',
         scope: 'activity heartrate location profile',
-        redirect_uri: credentials.redirectUri,
-        expires_in: '604800' // 7 days
+        redirect_uri: credentials.redirectUri
       });
       
       return `${this.authUrl}?${params.toString()}`;
@@ -253,22 +252,32 @@ export class FitbitAPI implements SmartWatchAPI {
       client_id: credentials.clientId
     });
 
-    const authHeader = btoa(`${credentials.clientId}:${credentials.clientSecret}`);
+    const authHeader = Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64');
+    
+    console.log('Token exchange request:');
+    console.log('- URL:', this.tokenUrl);
+    console.log('- Body:', tokenBody.toString());
+    console.log('- Auth header length:', authHeader.length);
     
     const response = await fetch(this.tokenUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${authHeader}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
       },
-      body: tokenBody
+      body: tokenBody.toString()
     });
 
+    const responseText = await response.text();
+    console.log('Token response status:', response.status);
+    console.log('Token response:', responseText);
+
     if (!response.ok) {
-      throw new Error(`Fitbit auth failed: ${response.status}`);
+      throw new Error(`Fitbit auth failed: ${response.status} - ${responseText}`);
     }
 
-    const tokenData = await response.json();
+    const tokenData = JSON.parse(responseText);
     return tokenData.access_token;
   }
 
@@ -446,13 +455,19 @@ export const smartWatchRoutes = (app: any) => {
 
       const clientId = process.env.FITBIT_CLIENT_ID || '23QGWK';
       const clientSecret = process.env.FITBIT_CLIENT_SECRET || '1a35a584cb0c6d37abefd2f9b27cd0f6';
-      const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
+      const host = req.get('host');
+      const protocol = req.get('x-forwarded-proto') || req.protocol;
+      const redirectUri = `${protocol}://${host}/api/smartwatch/fitbit/callback`;
 
       console.log('Callback - Environment variables:');
+      console.log('- Host:', host);
+      console.log('- Protocol:', protocol);
+      console.log('- X-Forwarded-Proto:', req.get('x-forwarded-proto'));
       console.log('- FITBIT_CLIENT_ID:', process.env.FITBIT_CLIENT_ID);
       console.log('- FITBIT_CLIENT_SECRET:', process.env.FITBIT_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
       console.log('- Using clientId:', clientId);
-      console.log('- Code:', code);
+      console.log('- Redirect URI:', redirectUri);
+      console.log('- Authorization code:', code);
 
       if (!clientId || !clientSecret || clientId === 'undefined' || clientSecret === 'undefined') {
         return res.status(500).json({ 
@@ -472,6 +487,8 @@ export const smartWatchRoutes = (app: any) => {
         code: code as string
       });
 
+      console.log('Authentication successful, token received');
+      
       // 認証成功時のリダイレクト
       res.redirect(`/settings?fitbit_connected=true&access_token=${accessToken}`);
     } catch (error) {
@@ -484,10 +501,15 @@ export const smartWatchRoutes = (app: any) => {
   app.post('/api/smartwatch/fitbit/auth-url', async (req: Request, res: Response) => {
     try {
       const clientId = process.env.FITBIT_CLIENT_ID || '23QGWK';
-      const redirectUri = `${req.protocol}://${req.get('host')}/api/smartwatch/fitbit/callback`;
+      const host = req.get('host');
+      const protocol = req.get('x-forwarded-proto') || req.protocol;
+      const redirectUri = `${protocol}://${host}/api/smartwatch/fitbit/callback`;
 
       console.log('Environment variables:');
       console.log('- NODE_ENV:', process.env.NODE_ENV);
+      console.log('- Host:', host);
+      console.log('- Protocol:', protocol);
+      console.log('- X-Forwarded-Proto:', req.get('x-forwarded-proto'));
       console.log('- FITBIT_CLIENT_ID:', process.env.FITBIT_CLIENT_ID);
       console.log('- Using clientId:', clientId);
       console.log('- Redirect URI:', redirectUri);
