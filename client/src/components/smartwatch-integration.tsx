@@ -68,10 +68,11 @@ export function SmartWatchIntegration() {
       }
     }
 
-    // URLパラメータをチェックしてFitbit認証成功を処理
+    // URLパラメータをチェックしてFitbit認証成功/失敗を処理
     const urlParams = new URLSearchParams(window.location.search);
     const fitbitConnected = urlParams.get('fitbit_connected');
     const urlAccessToken = urlParams.get('access_token');
+    const fitbitError = urlParams.get('fitbit_error');
     
     if (fitbitConnected === 'true' && urlAccessToken) {
       // アクセストークンを保存
@@ -81,7 +82,13 @@ export function SmartWatchIntegration() {
       window.history.replaceState({}, document.title, window.location.pathname);
       
       // 成功メッセージを表示
-      alert('Fitbitの接続が完了しました！データ同期を開始できます。');
+      alert('✅ Fitbitの接続が完了しました！データ同期を開始できます。');
+    } else if (fitbitError) {
+      // エラーメッセージを表示
+      alert(`❌ Fitbit認証エラー: ${decodeURIComponent(fitbitError)}`);
+      
+      // URLパラメータをクリア
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
   const [availableDevices, setAvailableDevices] = useState<SmartWatchDevice[]>([
@@ -215,12 +222,8 @@ export function SmartWatchIntegration() {
           const redirectUri = new URL(authUrl).searchParams.get('redirect_uri');
           console.log('🔗 リダイレクトURI:', redirectUri);
           
-          // より目立つ表示でリダイレクトURIを表示
-          const message = `Fitbit Developer Portalで設定すべきリダイレクトURI:\n\n${decodeURIComponent(redirectUri)}\n\n現在の設定: https://fitness-tracker-0307taishi.replit.app\n\n上記のリダイレクトURIをFitbit Developer Portalに設定してください。`;
-          alert(message);
-          
-          // 新しいタブでFitbit認証ページを開く
-          window.open(authUrl, '_blank');
+          // Fitbit認証ページに直接移動
+          window.location.href = authUrl;
         } else {
           console.error('認証URLエラー:', responseData);
           throw new Error('Fitbit認証URLの取得に失敗しました');
@@ -343,7 +346,11 @@ export function SmartWatchIntegration() {
       ));
     } catch (error) {
       console.error('同期エラー:', error);
-      alert(`データ同期エラー: ${error.message}`);
+      if (error.message.includes('アクセストークン')) {
+        alert('❌ Fitbitアクセストークンが見つかりません。\n\nFitbitデバイスを再接続してください：\n1. 「利用可能」タブでFitbitを選択\n2. 「接続」ボタンを押す\n3. Fitbitアカウントでログイン\n4. 認証完了後に再度同期を試してください');
+      } else {
+        alert(`データ同期エラー: ${error.message}`);
+      }
     } finally {
       setIsConnecting(null);
       setSyncProgress(0);

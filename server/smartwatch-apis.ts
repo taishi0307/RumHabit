@@ -237,7 +237,7 @@ export class FitbitAPI implements SmartWatchAPI {
       const params = new URLSearchParams({
         client_id: credentials.clientId,
         response_type: 'code',
-        scope: 'activity heartrate location profile',
+        scope: 'activity heartrate profile',
         redirect_uri: credentials.redirectUri
       });
       
@@ -285,6 +285,9 @@ export class FitbitAPI implements SmartWatchAPI {
     const workouts: WorkoutData[] = [];
     
     try {
+      console.log('Fetching Fitbit data with token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
+      console.log('Date range:', dateRange);
+      
       // Get activity logs for the date range
       const activitiesResponse = await fetch(
         `${this.baseUrl}/1/user/-/activities/list.json?afterDate=${dateRange.start}&sort=asc&limit=100&offset=0`,
@@ -301,11 +304,22 @@ export class FitbitAPI implements SmartWatchAPI {
       console.log('Fitbit API response:', responseText);
 
       if (!activitiesResponse.ok) {
-        console.log('Fitbit API Error:', activitiesResponse.status, responseText);
-        throw new Error(`Failed to fetch Fitbit activities: ${activitiesResponse.status} - ${responseText}`);
+        // より詳細なエラー処理
+        let errorMessage = `Fitbit API Error: ${activitiesResponse.status}`;
+        try {
+          const errorData = JSON.parse(responseText);
+          if (errorData.errors && errorData.errors.length > 0) {
+            errorMessage += ` - ${errorData.errors[0].message}`;
+          }
+        } catch (e) {
+          errorMessage += ` - ${responseText}`;
+        }
+        console.log('Fitbit API Error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const activitiesData = JSON.parse(responseText);
+      console.log('Fitbit activities data:', activitiesData);
       
       // Transform Fitbit activities to WorkoutData format
       for (const activity of activitiesData.activities || []) {
@@ -538,13 +552,36 @@ export const smartWatchRoutes = (app: any) => {
         code: code as string
       });
 
-      console.log('Authentication successful, token received');
-      
-      // 認証成功時のリダイレクト
-      res.redirect(`/settings?fitbit_connected=true&access_token=${accessToken}`);
+      console.log('Successfully obtained access token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
+
+      // アクセストークンを検証するために実際のAPI呼び出しを試行
+      try {
+        const testResponse = await fetch('https://api.fitbit.com/1/user/-/profile.json', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        console.log('Token validation response status:', testResponse.status);
+        
+        if (testResponse.ok) {
+          const profile = await testResponse.json();
+          console.log('Valid token - User profile:', profile.user?.displayName || 'Unknown');
+        } else {
+          console.log('Invalid token - API response:', await testResponse.text());
+        }
+      } catch (tokenError) {
+        console.error('Token validation error:', tokenError);
+      }
+
+      // フロントエンドにリダイレクト
+      const frontendUrl = `/settings?fitbit_connected=true&access_token=${accessToken}`;
+      res.redirect(frontendUrl);
     } catch (error) {
-      console.error('Callback error:', error);
-      res.status(500).json({ error: error.message });
+      console.error('Fitbit callback error:', error);
+      const frontendUrl = `/settings?fitbit_error=${encodeURIComponent(error.message)}`;
+      res.redirect(frontendUrl);
     }
   });
 
@@ -580,7 +617,7 @@ export const smartWatchRoutes = (app: any) => {
       const authUrl = await fitbitApi.authenticate({
         clientId,
         clientSecret: '', // Not needed for URL generation
-        redirectUri,
+        redirectUri
       });
 
       console.log('Generated auth URL:', authUrl);
