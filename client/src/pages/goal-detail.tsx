@@ -102,9 +102,37 @@ export default function GoalDetailPage() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">{goal.name}</h1>
-              <p className="text-gray-600 mt-1">
-                目標: {goal.targetValue} {goal.unit}
-              </p>
+              <div className="text-gray-600 mt-1">
+                {goal.category === 'workout' && goal.type === 'workout' && (
+                  <div className="flex flex-wrap gap-4">
+                    {goal.targetDistance && (
+                      <span>距離: {goal.targetDistance}km</span>
+                    )}
+                    {goal.targetTime && (
+                      <span>時間: {goal.targetTime}分</span>
+                    )}
+                    {goal.targetHeartRate && (
+                      <span>心拍数: {goal.targetHeartRate}bpm</span>
+                    )}
+                    {goal.targetCalories && (
+                      <span>カロリー: {goal.targetCalories}kcal</span>
+                    )}
+                  </div>
+                )}
+                {goal.category === 'sleep' && goal.type === 'sleep' && (
+                  <div className="flex flex-wrap gap-4">
+                    {goal.targetSleepTime && (
+                      <span>睡眠時間: {goal.targetSleepTime}時間</span>
+                    )}
+                    {goal.targetSleepScore && (
+                      <span>睡眠スコア: {goal.targetSleepScore}点</span>
+                    )}
+                  </div>
+                )}
+                {goal.targetValue && (
+                  <span>目標: {goal.targetValue} {goal.unit}</span>
+                )}
+              </div>
             </div>
           </div>
           <Badge variant={goal.isActive ? "default" : "secondary"}>
