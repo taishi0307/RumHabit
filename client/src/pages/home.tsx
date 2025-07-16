@@ -196,61 +196,62 @@ export default function Home() {
                   }
                   
                   return (
-                    <Card key={goal.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <Link href={`/goal/${goal.id}`} className="flex items-center gap-2 flex-1 cursor-pointer">
-                            <h3 className="font-semibold text-gray-800">{goal.name}</h3>
-                            <span className="text-sm text-gray-600">
-                              {goal.targetValue} {goal.unit}
-                            </span>
-                          </Link>
-                          <button
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer flex items-center justify-center transition-colors"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDeleteGoal(goal.id, goal.name);
-                            }}
-                            title="目標を削除"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-
-                        {/* Mini Calendar Grid */}
-                        <div className="mb-3">
-                          <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
-                            {miniCalendarData.map((day, index) => {
-                              let bgColor = 'bg-gray-100';
-                              let textColor = 'text-white';
-                              
-                              if (day.hasRecord && day.achieved) {
-                                bgColor = 'bg-green-500';
-                                textColor = 'text-white';
-                              }
-                              
-                              // Period outside range gets gray text
-                              if (!day.isInRange) {
-                                textColor = 'text-gray-400';
-                              }
-                              
-                              return (
-                                <div
-                                  key={index}
-                                  className={`${bgColor} ${textColor} aspect-square flex items-center justify-center text-xs font-medium`}
-                                  title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '記録なし') : '記録なし'}`}
-                                >
-                                  {day.day}
-                                </div>
-                              );
-                            })}
+                    <Link key={goal.id} href={`/goal/${goal.id}`} className="block">
+                      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2 flex-1">
+                              <h3 className="font-semibold text-gray-800">{goal.name}</h3>
+                              <span className="text-sm text-gray-600">
+                                {goal.targetValue} {goal.unit}
+                              </span>
+                            </div>
+                            <button
+                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer flex items-center justify-center transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteGoal(goal.id, goal.name);
+                              }}
+                              title="目標を削除"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
                           </div>
-                        </div>
 
+                          {/* Mini Calendar Grid */}
+                          <div className="mb-3">
+                            <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
+                              {miniCalendarData.map((day, index) => {
+                                let bgColor = 'bg-gray-100';
+                                let textColor = 'text-white';
+                                
+                                if (day.hasRecord && day.achieved) {
+                                  bgColor = 'bg-green-500';
+                                  textColor = 'text-white';
+                                }
+                                
+                                // Period outside range gets gray text
+                                if (!day.isInRange) {
+                                  textColor = 'text-gray-400';
+                                }
+                                
+                                return (
+                                  <div
+                                    key={index}
+                                    className={`${bgColor} ${textColor} aspect-square flex items-center justify-center text-xs font-medium`}
+                                    title={`${day.date}: ${day.hasRecord ? (day.achieved ? '達成' : '記録なし') : '記録なし'}`}
+                                  >
+                                    {day.day}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
 
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </Link>
                   );
                 })}
       </div>
