@@ -170,9 +170,6 @@ export default function Home() {
 
                         {/* Mini Calendar Grid */}
                         <div className="mb-3">
-                          <div className="text-center text-xs text-gray-600 mb-2">
-                            {goal.name} - {goal.targetValue} {goal.unit}
-                          </div>
                           <div className="grid grid-cols-7 gap-px bg-gray-200 p-1 rounded">
                             {miniCalendarData.map((day, index) => {
                               let bgColor = 'bg-gray-100';
