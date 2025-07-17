@@ -159,15 +159,6 @@ export default function Home() {
               設定
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="text-gray-500 border-gray-300 hover:bg-gray-50"
-          >
-            <LogOut className="h-3 w-3 mr-1" />
-            ログアウト
-          </Button>
         </div>
       </div>
 
